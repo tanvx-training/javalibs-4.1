@@ -10,6 +10,8 @@ _(bồi dần theo từng bậc migration)_
 - **Spring Boot baseline: 3.5.3 → 4.1.x.** Service dùng javalibs 2.0.x phải chạy trên
   Spring Boot 4.1. Dòng 3.5 đã hết vòng đời OSS ngày 30/06/2026.
 - **Java baseline giữ nguyên 21** — không cần nâng JDK khi lên 2.0.x.
+- **`spring-boot-starter-web` → `spring-boot-starter-webmvc`.** `javalibs-web-spring-boot-starter`
+  đã kéo starter mới; service nào tự khai `spring-boot-starter-web` phải tự đổi tên.
 
 ## Thay đổi hành vi
 

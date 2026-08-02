@@ -194,7 +194,7 @@ class GlobalExceptionHandlerTest {
 
         @GetMapping("/no-resource")
         String noResource() throws NoResourceFoundException {
-            throw new NoResourceFoundException(HttpMethod.GET, "/static/missing.png");
+            throw new NoResourceFoundException(HttpMethod.GET, "/static/missing.png", "No static resource /static/missing.png.");
         }
 
         @GetMapping("/only-get")
