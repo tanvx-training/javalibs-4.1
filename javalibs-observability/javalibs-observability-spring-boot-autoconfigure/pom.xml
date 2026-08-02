@@ -48,6 +48,13 @@
       <artifactId>spring-boot-actuator-autoconfigure</artifactId>
       <optional>true</optional>
     </dependency>
+    <!-- Boot 4's modular architecture moved MeterRegistryCustomizer out of
+         spring-boot-actuator-autoconfigure into this dedicated module. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-micrometer-metrics</artifactId>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
