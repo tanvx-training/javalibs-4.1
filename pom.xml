@@ -16,23 +16,13 @@
     This POM contains no source code.
   </description>
 
+  <!--
+    Migration Boot 3.5.3 -> 4.1 đi theo bậc: danh sách này thu gọn ở bậc 0 và
+    mở dần từng bậc, để `mvn clean install` luôn xanh trọn vẹn ở cuối mỗi bậc.
+    Bậc hiện tại: 0. Xem docs/superpowers/plans/2026-08-02-javalibs-4-1-migration.md
+  -->
   <modules>
     <module>javalibs-dependencies</module>
-    <module>javalibs-internal</module>
-    <module>javalibs-spring</module>
-    <module>javalibs-ddd</module>
-    <module>javalibs-cqrs</module>
-    <module>javalibs-web</module>
-    <module>javalibs-security</module>
-    <module>javalibs-authz</module>
-    <module>javalibs-datahub</module>
-    <module>javalibs-search</module>
-    <module>javalibs-observability</module>
-    <module>javalibs-cache</module>
-    <module>javalibs-resilience</module>
-    <module>javalibs-openapi</module>
-    <module>javalibs-persistence</module>
-    <module>javalibs-test</module>
   </modules>
 
   <properties>
@@ -42,7 +32,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <!-- Third-party versions (everything else is managed by spring-boot-dependencies) -->
-    <spring-boot.version>3.5.3</spring-boot.version>
+    <spring-boot.version>4.1.0</spring-boot.version>
     <jjwt.version>0.12.6</jjwt.version>
     <mapstruct.version>1.6.3</mapstruct.version>
     <resilience4j.version>2.3.0</resilience4j.version>

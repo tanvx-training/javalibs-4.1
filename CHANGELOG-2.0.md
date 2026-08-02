@@ -7,6 +7,10 @@ groupId `io.javalibs` và mọi artifactId giữ nguyên — chỉ dòng version
 
 _(bồi dần theo từng bậc migration)_
 
+- **Spring Boot baseline: 3.5.3 → 4.1.x.** Service dùng javalibs 2.0.x phải chạy trên
+  Spring Boot 4.1. Dòng 3.5 đã hết vòng đời OSS ngày 30/06/2026.
+- **Java baseline giữ nguyên 21** — không cần nâng JDK khi lên 2.0.x.
+
 ## Thay đổi hành vi
 
 _(mọi test bị sửa vì hành vi đổi — loại (b) — phải có mục ở đây)_
