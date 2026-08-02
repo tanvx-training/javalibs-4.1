@@ -97,6 +97,11 @@
       io.javalibs.test.BaseIntegrationTest boots with @SpringBootTest(webEnvironment = RANDOM_PORT)
       and autowires a TestRestTemplate, so a Servlet/Spring MVC classpath is required even though
       this module itself is not web-facing. Test-scoped only; does not leak to consumers.
+
+      TODO(bậc 7): đổi sang spring-boot-starter-webmvc. Boot 4 đã đổi tên artifact này
+      (spring-boot-starter-web deprecated, xem CHANGELOG-2.0.md); chưa đổi ở đây vì module
+      này chưa nằm trong <modules> của root pom nên không build/verify được ở bậc 3. Task 9
+      (bậc 7 — mở javalibs-authz) phải xử lý khi mở module này vào reactor.
     -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
