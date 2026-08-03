@@ -50,14 +50,13 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--
+      Jackson 3: jackson-databind moved to groupId tools.jackson.core. The former
+      jackson-datatype-jsr310 module was merged into jackson-databind itself.
+    -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

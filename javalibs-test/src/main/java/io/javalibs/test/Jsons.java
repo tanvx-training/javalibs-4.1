@@ -1,19 +1,23 @@
 package io.javalibs.test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * JSON helpers for tests: serialization round-trips and structural equality
  * assertions independent of key order and formatting.
+ *
+ * <p>{@code java.time} support is native to jackson-databind on Jackson 3 (the former
+ * {@code jackson-datatype-jsr310} module was folded into jackson-databind itself), so no
+ * module registration is needed here anymore.
  */
 public final class Jsons {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private static final ObjectMapper MAPPER = JsonMapper.builder()
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .build();
 
     private Jsons() {
     }

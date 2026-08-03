@@ -56,6 +56,28 @@ _(bồi dần theo từng bậc migration)_
   `@DataJpaTest`/`TestEntityManager` phải đổi dependency test-scope sang
   `org.springframework.boot:spring-boot-starter-data-jpa-test` (kéo theo cả
   `spring-boot-starter-data-jpa` + `spring-boot-starter-test` + hỗ trợ slice test JPA).
+- **Jackson 2 → 3 (bậc 8).** Class API chuyển sang `tools.jackson.*` (annotation vẫn ở
+  `com.fasterxml.jackson.annotation.*`). Service tự inject `ObjectMapper` phải đổi import.
+  Artifact `com.fasterxml.jackson.core:jackson-databind` → `tools.jackson.core:jackson-databind`;
+  `com.fasterxml.jackson.datatype:jackson-datatype-jsr310` không còn tồn tại — hỗ trợ
+  `java.time` nay có sẵn trong `jackson-databind`, không cần đăng ký module. Ngoại lệ:
+  `jjwt-jackson` (JJWT) chưa lên Jackson 3 nên `javalibs-security-issuer` vẫn kéo
+  `com.fasterxml.jackson.datatype:jackson-datatype-jsr310` (Jackson 2) làm phụ thuộc runtime
+  cho riêng JJWT — không liên quan tới `ObjectMapper` mà service tự inject.
+- **`DataSourceAutoConfiguration`/`DataSourceTransactionManagerAutoConfiguration` dời package:**
+  `org.springframework.boot.autoconfigure.jdbc.*` → `org.springframework.boot.jdbc.autoconfigure.*`
+  (artifact `org.springframework.boot:spring-boot-jdbc`, khai optional).
+- **`KafkaAutoConfiguration` dời package:** `org.springframework.boot.autoconfigure.kafka.*` →
+  `org.springframework.boot.kafka.autoconfigure.*` (artifact `org.springframework.boot:spring-boot-kafka`,
+  khai optional).
+- **`CacheAutoConfiguration` dời package:** `org.springframework.boot.autoconfigure.cache.*` →
+  `org.springframework.boot.cache.autoconfigure.*` (artifact `org.springframework.boot:spring-boot-cache`,
+  khai optional).
+- **`RedisCacheConfigurations.jsonSerializer()` đổi kiểu trả về:**
+  `GenericJackson2JsonRedisSerializer` → `GenericJacksonJsonRedisSerializer` (Spring Data Redis
+  đổi tên lớp serializer theo phiên bản Jackson). Tên method và danh sách tham số (rỗng) giữ
+  nguyên. Service gọi qua `var` hoặc chaining không bị ảnh hưởng; service khai kiểu tường minh
+  `GenericJackson2JsonRedisSerializer` phải đổi.
 
 ## Thay đổi hành vi
 

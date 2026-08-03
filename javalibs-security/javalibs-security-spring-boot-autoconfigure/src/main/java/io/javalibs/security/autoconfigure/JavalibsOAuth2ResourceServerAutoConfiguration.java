@@ -1,6 +1,5 @@
 package io.javalibs.security.autoconfigure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalibs.security.spring.RestAccessDeniedHandler;
 import io.javalibs.security.spring.RestAuthenticationEntryPoint;
 import io.javalibs.security.spring.UserContextJwtAuthenticationConverter;
@@ -24,6 +23,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * OAuth2 Resource Server mode ({@code javalibs.security.mode=oauth2-resource-server}).

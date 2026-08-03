@@ -41,14 +41,14 @@
       <artifactId>caffeine</artifactId>
       <optional>true</optional>
     </dependency>
+    <!--
+      Jackson 3: jackson-databind moved to groupId tools.jackson.core. The former
+      jackson-datatype-jsr310 module was merged into jackson-databind itself, so java.time
+      support no longer needs a separate dependency or module registration.
+    -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
       <optional>true</optional>
     </dependency>
 

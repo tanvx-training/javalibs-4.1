@@ -1,12 +1,12 @@
 package io.javalibs.datahub.spring.outbox;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalibs.datahub.DatahubException;
 import io.javalibs.datahub.EventEnvelope;
 import io.javalibs.datahub.TransactionalOutbox;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -67,7 +67,7 @@ public class JdbcTransactionalOutbox implements TransactionalOutbox {
   private String toJson(Object value) {
     try {
       return objectMapper.writeValueAsString(value);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new DatahubException("Failed to serialize outbox event to JSON", e);
     }
   }

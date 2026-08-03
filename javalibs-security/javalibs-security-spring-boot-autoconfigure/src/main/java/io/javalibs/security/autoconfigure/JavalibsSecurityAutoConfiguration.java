@@ -1,6 +1,5 @@
 package io.javalibs.security.autoconfigure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalibs.security.JwtTokenValidator;
 import io.javalibs.security.JwtValidationConfig;
 import io.javalibs.security.TokenBlacklist;
@@ -27,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.StringUtils;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Auto-configuration for stateless JWT security on Spring Boot servlet applications.

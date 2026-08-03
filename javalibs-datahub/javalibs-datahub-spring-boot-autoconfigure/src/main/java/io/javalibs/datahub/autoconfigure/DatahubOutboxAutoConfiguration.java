@@ -1,6 +1,5 @@
 package io.javalibs.datahub.autoconfigure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalibs.datahub.EventPublisher;
 import io.javalibs.datahub.TransactionalOutbox;
 import io.javalibs.datahub.spring.outbox.JdbcOutboxRelay;
@@ -13,14 +12,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.ObjectMapper;
 
 import javax.sql.DataSource;
 
@@ -51,7 +51,7 @@ import javax.sql.DataSource;
         DataSourceAutoConfiguration.class,
         DataSourceTransactionManagerAutoConfiguration.class
     },
-    afterName = "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration")
+    afterName = "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration")
 @ConditionalOnClass({JdbcOperations.class, ObjectMapper.class})
 @ConditionalOnProperty(prefix = "javalibs.datahub.outbox", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(DatahubProperties.class)
