@@ -46,5 +46,16 @@
       <artifactId>jakarta.servlet-api</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--
+      Test-only: AutoConfigureMockMvc/MockMvc test support, needed to drive a
+      real GET /v3/api-docs through a genuine springdoc autoconfiguration
+      (see JavalibsOpenApiSpringdocIntegrationTest). In Boot 4 this moved out
+      of spring-boot-test-autoconfigure into its own webmvc-specific artifact.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
