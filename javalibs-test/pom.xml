@@ -34,13 +34,28 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-testcontainers</artifactId>
     </dependency>
+    <!--
+      Boot 4 no longer auto-configures TestRestTemplate for @SpringBootTest; BaseIntegrationTest
+      needs @AutoConfigureTestRestTemplate (org.springframework.boot.resttestclient.autoconfigure)
+      to keep providing it to subclasses. Compile scope for the same reason as every other
+      dependency here — see the class comment above.
+    -->
     <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-resttestclient</artifactId>
+    </dependency>
+    <!--
+      TestRestTemplateTestAutoConfiguration (registered by @AutoConfigureTestRestTemplate above)
+      needs RestTemplateBuilder on the classpath at context-startup time, or bean-type deduction
+      throws NoClassDefFoundError. Not pulled in transitively by spring-boot-resttestclient.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-restclient</artifactId>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>postgresql</artifactId>
+      <artifactId>testcontainers-postgresql</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

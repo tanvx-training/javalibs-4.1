@@ -17,6 +17,21 @@ _(bồi dần theo từng bậc migration)_
   `-authorization-server`). Service dùng mode `oauth2-resource-server` phải đổi.
 - **Spring Security 7.** API nội bộ của javalibs-security đã cập nhật; `UserContext`,
   `@RequireRole`, `@CurrentUser` giữ nguyên chữ ký nên service không phải sửa code.
+- **Testcontainers 1.x → 2.x.** Artifact `org.testcontainers:postgresql` →
+  `org.testcontainers:testcontainers-postgresql`; package
+  `org.testcontainers.containers.PostgreSQLContainer` →
+  `org.testcontainers.postgresql.PostgreSQLContainer`; `junit-jupiter` không còn cần.
+  Service tự khai container riêng phải đổi theo. Thêm nữa: lớp `PostgreSQLContainer` ở
+  TC 2.x không còn generic tự-tham-chiếu (`PostgreSQLContainer<Self>`) — service khai kiểu
+  tường minh dạng `PostgreSQLContainer<?> pg = ...` phải bỏ tham số generic
+  (`PostgreSQLContainer pg = ...`).
+- **`BaseIntegrationTest` nay mang `@AutoConfigureTestRestTemplate`** — Boot 4 không còn
+  tự cấp `TestRestTemplate` cho `@SpringBootTest`. Test kế thừa không phải sửa gì;
+  test tự khai `@SpringBootTest` mà dùng `TestRestTemplate` thì phải tự thêm annotation.
+- **`TestRestTemplate` đổi package:** `org.springframework.boot.test.web.client.TestRestTemplate`
+  → `org.springframework.boot.resttestclient.TestRestTemplate` (artifact
+  `org.springframework.boot:spring-boot-resttestclient`). Service tự import lớp này (thay vì chỉ
+  dùng qua `@Autowired` không khai kiểu tường minh — vẫn phải import đúng lớp) phải đổi.
 
 ## Thay đổi hành vi
 

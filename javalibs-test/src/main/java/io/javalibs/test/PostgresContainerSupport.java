@@ -2,7 +2,7 @@ package io.javalibs.test;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
  * Provides a single shared PostgreSQL Testcontainer for the whole test JVM and
@@ -20,10 +20,10 @@ public abstract class PostgresContainerSupport {
 
     public static final String IMAGE = "postgres:16-alpine";
 
-    private static final PostgreSQLContainer<?> POSTGRES;
+    private static final PostgreSQLContainer POSTGRES;
 
     static {
-        POSTGRES = new PostgreSQLContainer<>(IMAGE)
+        POSTGRES = new PostgreSQLContainer(IMAGE)
                 .withDatabaseName("it_db")
                 .withUsername("it_user")
                 .withPassword("it_pass");
@@ -38,7 +38,7 @@ public abstract class PostgresContainerSupport {
     }
 
     /** Direct access to the shared container (e.g. to run SQL fixtures). */
-    protected static PostgreSQLContainer<?> postgres() {
+    protected static PostgreSQLContainer postgres() {
         return POSTGRES;
     }
 }
