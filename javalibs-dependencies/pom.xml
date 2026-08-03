@@ -310,7 +310,7 @@
   </distributionManagement>
 
   <properties>
-    <javalibs.distribution.releases.url>https://nexus.example.com/repository/maven-releases</javalibs.distribution.releases.url>
-    <javalibs.distribution.snapshots.url>https://nexus.example.com/repository/maven-snapshots</javalibs.distribution.snapshots.url>
+    <javalibs.distribution.releases.url>https://maven.pkg.github.com/tanvx-training/javalibs-4.1</javalibs.distribution.releases.url>
+    <javalibs.distribution.snapshots.url>https://maven.pkg.github.com/tanvx-training/javalibs-4.1</javalibs.distribution.snapshots.url>
   </properties>
 </project>
