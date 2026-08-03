@@ -12,6 +12,11 @@ _(bồi dần theo từng bậc migration)_
 - **Java baseline giữ nguyên 21** — không cần nâng JDK khi lên 2.0.x.
 - **`spring-boot-starter-web` → `spring-boot-starter-webmvc`.** `javalibs-web-spring-boot-starter`
   đã kéo starter mới; service nào tự khai `spring-boot-starter-web` phải tự đổi tên.
+- **Starter OAuth2 đổi tên:** `spring-boot-starter-oauth2-resource-server` →
+  `spring-boot-starter-security-oauth2-resource-server` (tương tự cho `-client`,
+  `-authorization-server`). Service dùng mode `oauth2-resource-server` phải đổi.
+- **Spring Security 7.** API nội bộ của javalibs-security đã cập nhật; `UserContext`,
+  `@RequireRole`, `@CurrentUser` giữ nguyên chữ ký nên service không phải sửa code.
 
 ## Thay đổi hành vi
 

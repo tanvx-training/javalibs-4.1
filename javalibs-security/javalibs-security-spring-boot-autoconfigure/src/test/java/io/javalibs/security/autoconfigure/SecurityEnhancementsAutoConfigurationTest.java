@@ -8,7 +8,8 @@ import io.javalibs.security.spring.UserContextJwtAuthenticationConverter;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,8 @@ class SecurityEnhancementsAutoConfigurationTest {
                     SecurityBlacklistAutoConfiguration.class,
                     JavalibsSecurityAutoConfiguration.class,
                     JavalibsOAuth2ResourceServerAutoConfiguration.class,
-                    SecurityAutoConfiguration.class));
+                    SecurityAutoConfiguration.class,
+                    ServletWebSecurityAutoConfiguration.class));
 
     @Configuration
     static class WithRedisTemplate {

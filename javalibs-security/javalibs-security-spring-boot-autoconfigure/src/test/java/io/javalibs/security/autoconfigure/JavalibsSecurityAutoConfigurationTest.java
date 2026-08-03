@@ -7,7 +7,8 @@ import io.javalibs.security.spring.RestAccessDeniedHandler;
 import io.javalibs.security.spring.RestAuthenticationEntryPoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,8 @@ class JavalibsSecurityAutoConfigurationTest {
             .withConfiguration(AutoConfigurations.of(
                     JavalibsSecurityAutoConfiguration.class,
                     SecurityWebMvcAutoConfiguration.class,
-                    SecurityAutoConfiguration.class));
+                    SecurityAutoConfiguration.class,
+                    ServletWebSecurityAutoConfiguration.class));
 
     @Test
     void configuredSecretRegistersAllBeans() {

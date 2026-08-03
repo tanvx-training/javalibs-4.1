@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpMethod;
@@ -47,9 +48,9 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
  * configuration change.</p>
  */
 @AutoConfiguration(
-        beforeName = "org.springframework.boot.autoconfigure.security.oauth2.resource.servlet."
+        beforeName = "org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet."
                 + "OAuth2ResourceServerAutoConfiguration",
-        before = org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class)
+        before = ServletWebSecurityAutoConfiguration.class)
 @ConditionalOnClass({SecurityFilterChain.class, JwtDecoder.class, Jwt.class})
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "javalibs.security", name = "enabled", havingValue = "true",
