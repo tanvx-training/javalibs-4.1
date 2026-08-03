@@ -24,14 +24,10 @@ Yêu cầu môi trường (enforcer chặn nếu thiếu): **JDK 21+, Maven 3.6.
 
 ## Publish lên GitHub Packages
 
-> Repo GitHub và pipeline publish thật sự được tạo ở Task 13 (đang chờ người chủ dự án duyệt,
-> chưa chạy). Nội dung dưới đây là đích cấu hình cho dòng 2.0.x; `pom.xml` hiện tại vẫn khai
-> `distributionManagement` kiểu Nexus (`javalibs-releases` / `javalibs-snapshots`) kế thừa từ
-> dòng 1.0.x cho tới khi Task 13 đổi nó.
-
-Sau Task 13, `distributionManagement` trong root POM **và** BOM sẽ trỏ về một repository Maven
-duy nhất của GitHub Packages (id `github`), thay cho cặp id `javalibs-releases`/
-`javalibs-snapshots` hiện tại:
+Repo: [`tanvx-training/javalibs-4.1`](https://github.com/tanvx-training/javalibs-4.1) (private).
+`distributionManagement` trong root POM **và** BOM trỏ về một repository Maven duy nhất của
+GitHub Packages, dùng chung URL cho cả cặp id `javalibs-releases`/`javalibs-snapshots`
+(khác Nexus, nơi mỗi id một URL riêng):
 
 ```bash
 mvn -B -DskipTests deploy -Prelease
@@ -44,20 +40,19 @@ mvn -B -DskipTests deploy -Prelease
 ```xml
 <servers>
   <server>
-    <id>github</id>
+    <id>javalibs-snapshots</id>
     <username>${env.GITHUB_ACTOR}</username>
     <password>${env.GITHUB_TOKEN}</password>
   </server>
 </servers>
 ```
 
-- Service **tiêu thụ** artifact từ GitHub Packages phải khai cùng `<repository>` id `github` ở
-  `<repositories>` và cùng cặp credentials — GitHub Packages yêu cầu xác thực kể cả khi chỉ đọc.
+- Service **tiêu thụ** artifact từ GitHub Packages phải khai cùng URL ở `<repositories>` và
+  cùng cặp credentials — GitHub Packages yêu cầu xác thực kể cả khi chỉ đọc.
 
 ## CI/CD
 
-Workflow mẫu tại `.github/workflows/ci.yml` (tạo ở Task 13; repo hiện làm việc trên branch
-`master`, chưa có remote):
+Workflow tại `.github/workflows/ci.yml` (repo làm việc trên branch `master`):
 
 | Trigger | Hành động |
 |---|---|

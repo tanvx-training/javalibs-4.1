@@ -126,22 +126,20 @@ Yêu cầu: JDK 21+, Maven 3.6.3+ (enforcer sẽ chặn nếu thiếu).
 
 ## Publish lên GitHub Packages
 
-> Repo GitHub và pipeline publish thật sự được tạo ở Task 13 (đang chờ người chủ dự án duyệt,
-> chưa chạy). Nội dung dưới đây là đích cấu hình cho dòng 2.0.x — thay `<OWNER>` bằng
-> tổ chức/tài khoản GitHub thật khi Task 13 hoàn tất.
-
-Khi Task 13 chạy, `distributionManagement` trong root POM và BOM sẽ đổi từ cặp
-`javalibs-releases`/`javalibs-snapshots` (Nexus, dùng ở dòng 1.0.x — vẫn là cấu hình hiện tại
-trong `pom.xml` cho tới khi đó) sang một repository Maven duy nhất của GitHub Packages phục vụ
-cả release lẫn snapshot:
+`distributionManagement` trong root POM và BOM trỏ về repository GitHub Packages của
+[`tanvx-training/javalibs-4.1`](https://github.com/tanvx-training/javalibs-4.1), dùng chung một
+URL cho cả release lẫn snapshot (khác Nexus):
 
 ```xml
 <distributionManagement>
   <repository>
-    <id>github</id>
-    <name>GitHub Packages — javalibs</name>
-    <url>https://maven.pkg.github.com/<OWNER>/javalibs-4.1</url>
+    <id>javalibs-releases</id>
+    <url>https://maven.pkg.github.com/tanvx-training/javalibs-4.1</url>
   </repository>
+  <snapshotRepository>
+    <id>javalibs-snapshots</id>
+    <url>https://maven.pkg.github.com/tanvx-training/javalibs-4.1</url>
+  </snapshotRepository>
 </distributionManagement>
 ```
 
@@ -152,23 +150,24 @@ mvn -B -DskipTests deploy -Prelease
 ```
 
 Credentials: GitHub Packages xác thực bằng personal access token (scope `write:packages`,
-`read:packages`) hoặc `GITHUB_TOKEN` mặc định trong GitHub Actions — khai trong `settings.xml`:
+`read:packages`) hoặc `GITHUB_TOKEN` mặc định trong GitHub Actions — khai trong `settings.xml`
+dưới đúng id (`javalibs-snapshots` cho dòng 2.0.0-SNAPSHOT hiện tại):
 
 ```xml
 <servers>
   <server>
-    <id>github</id>
+    <id>javalibs-snapshots</id>
     <username>${env.GITHUB_ACTOR}</username>
     <password>${env.GITHUB_TOKEN}</password>
   </server>
 </servers>
 ```
 
-Service muốn **tiêu thụ** artifact từ GitHub Packages (thay vì chỉ publish) phải khai cùng
-`<repository>` id `github` ở `<repositories>` của POM và cùng cặp credentials — GitHub Packages
-yêu cầu xác thực kể cả khi chỉ đọc package công khai trong cùng tổ chức. Workflow mẫu:
-`.github/workflows/ci.yml` — build + test mọi PR, deploy SNAPSHOT từ `master`, release từ tag
-`v*`.
+Service muốn **tiêu thụ** artifact từ GitHub Packages (thay vì chỉ publish) phải khai cùng URL ở
+`<repositories>` của POM và cùng cặp credentials (username = GitHub handle, password = PAT scope
+`read:packages`) — GitHub Packages yêu cầu xác thực kể cả khi chỉ đọc package trong cùng tổ
+chức. Workflow: `.github/workflows/ci.yml` — build + test mọi PR, deploy SNAPSHOT từ `master`,
+release từ tag `v*`.
 
 ## Quy tắc thiết kế (khi thêm module mới)
 

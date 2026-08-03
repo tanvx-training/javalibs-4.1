@@ -17,5 +17,4 @@ target/
 # Env / secrets
 .env
 .claude
-.github
 .idea
