@@ -272,7 +272,7 @@ Chiều phụ thuộc: `web → service → repository/model`; `config` đứng 
   <parent>  <!-- hoặc import spring-boot-dependencies trong dependencyManagement -->
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.3</version>
+    <version>4.1.0</version>
     <relativePath/>
   </parent>
 
@@ -281,7 +281,7 @@ Chiều phụ thuộc: `web → service → repository/model`; `config` đứng 
       <dependency>
         <groupId>io.javalibs</groupId>
         <artifactId>javalibs-dependencies</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>2.0.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -356,7 +356,7 @@ resources/
 
 ## Checklist khởi tạo service mới
 
-- [ ] Tạo project 1 module, parent/BOM Spring Boot 3.5.x + import BOM `javalibs-dependencies`
+- [ ] Tạo project 1 module, parent/BOM Spring Boot 4.1.x + import BOM `javalibs-dependencies`
 - [ ] Chọn mức cấu trúc (A: DDD+CQRS / B: layered) và ghi lựa chọn vào README của service
 - [ ] Khai báo bộ starter nền (web, security, openapi, observability, persistence) + starter theo nhu cầu
 - [ ] `application.yml`: `spring.application.name`, datasource, `javalibs.security.jwt.secret` qua env, `ddl-auto: validate`

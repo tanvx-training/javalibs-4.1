@@ -6,7 +6,7 @@
 
 | artifactId | Packaging | Mô tả |
 |---|---|---|
-| `javalibs-test` | jar | Module đơn, 4 lớp trong package `io.javalibs.test`. Các dependency bên trong (spring-boot-starter-test, spring-boot-testcontainers, testcontainers `junit-jupiter` + `postgresql`, jackson-databind + jackson-datatype-jsr310) **cố ý để scope compile** — consumer chỉ cần khai báo một dependency `scope=test` là kéo đủ cả bộ test classpath. |
+| `javalibs-test` | jar | Module đơn, 4 lớp trong package `io.javalibs.test`. Các dependency bên trong (`spring-boot-starter-test`, `spring-boot-testcontainers`, `spring-boot-resttestclient`, `spring-boot-restclient`, `org.testcontainers:testcontainers-postgresql` — TC 2.x, không còn cần `junit-jupiter` riêng — và `tools.jackson.core:jackson-databind` — Jackson 3, `jackson-datatype-jsr310` không còn tồn tại vì `java.time` nay có sẵn trong `jackson-databind`) **cố ý để scope compile** — consumer chỉ cần khai báo một dependency `scope=test` là kéo đủ cả bộ test classpath. |
 
 ## Khi nào dùng / không dùng
 
@@ -25,12 +25,13 @@
 
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureTestRestTemplate
 @ActiveProfiles("test")
 public abstract class BaseIntegrationTest extends PostgresContainerSupport {
 }
 ```
 
-Base class cho integration test full-context: boot ứng dụng trên **random port**, kích hoạt profile `test` (khớp quy ước `Profiles.TEST` của [javalibs-spring](spring.md)) và thừa hưởng database PostgreSQL cách ly từ `PostgresContainerSupport`. Không có method nào — chỉ là tổ hợp annotation + container.
+Base class cho integration test full-context: boot ứng dụng trên **random port**, kích hoạt profile `test` (khớp quy ước `Profiles.TEST` của [javalibs-spring](spring.md)) và thừa hưởng database PostgreSQL cách ly từ `PostgresContainerSupport`. Không có method nào — chỉ là tổ hợp annotation + container. `@AutoConfigureTestRestTemplate` (`org.springframework.boot.resttestclient.autoconfigure`) là bắt buộc từ Boot 4 — không còn tự cấp `TestRestTemplate` chỉ nhờ `webEnvironment = RANDOM_PORT` như ở dòng 1.0.x (xem [CHANGELOG-2.0.md](../../CHANGELOG-2.0.md)); test kế thừa `BaseIntegrationTest` không phải tự thêm gì.
 
 ### `io.javalibs.test.PostgresContainerSupport`
 
@@ -41,7 +42,7 @@ Cung cấp **một** container PostgreSQL chia sẻ cho cả JVM test và nối 
 | `public static final String IMAGE` | `"postgres:16-alpine"`. |
 | Static initializer | Tạo `PostgreSQLContainer` với database `it_db`, user `it_user`, password `it_pass` rồi `start()` ngay khi class load — **singleton container pattern**: khởi động một lần, mọi test class kế thừa dùng chung, không stop thủ công; Ryuk (resource reaper của Testcontainers) dọn container khi JVM thoát. Suite chạy nhanh vì không tốn một container mỗi class. |
 | `@DynamicPropertySource static void registerDatasourceProperties(DynamicPropertyRegistry registry)` | Đăng ký `spring.datasource.url`, `spring.datasource.username`, `spring.datasource.password` trỏ vào container. Vì `@DynamicPropertySource` chạy **trước khi** Spring context được tạo và supplier lấy giá trị lazy từ container đang chạy, ứng dụng kết nối đúng port ngẫu nhiên mà Docker cấp. Cùng một bộ property cho mọi test class nên Spring test context cache vẫn hoạt động (không phải boot lại context mỗi class). |
-| `protected static PostgreSQLContainer<?> postgres()` | Truy cập trực tiếp container — ví dụ chạy SQL fixture (`postgres().getJdbcUrl()`, `execInContainer(...)`). |
+| `protected static PostgreSQLContainer postgres()` | Truy cập trực tiếp container — ví dụ chạy SQL fixture (`postgres().getJdbcUrl()`, `execInContainer(...)`). Kiểu trả về **không có generic** — Testcontainers 2.x bỏ generic tự-tham-chiếu `PostgreSQLContainer<Self>` của TC 1.x (breaking change, xem [CHANGELOG-2.0.md](../../CHANGELOG-2.0.md)). |
 
 ### `io.javalibs.test.TestData`
 
@@ -79,7 +80,7 @@ Khai báo dependency **với scope test**:
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-test</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -92,7 +93,7 @@ import io.javalibs.test.Jsons;
 import io.javalibs.test.TestData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -101,7 +102,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OrderApiIT extends BaseIntegrationTest {
 
     @Autowired
-    TestRestTemplate rest;   // có sẵn nhờ webEnvironment = RANDOM_PORT
+    TestRestTemplate rest;   // có sẵn nhờ @AutoConfigureTestRestTemplate trên BaseIntegrationTest
 
     @Test
     void createsOrder() {
@@ -135,7 +136,7 @@ Service dùng [javalibs-security](security.md) (JWT mode) có thể mint token t
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-security-test</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -185,7 +186,7 @@ Muốn test token hết hạn: `JwtTestFactory.create().issuedAt(Instant.now().m
 
 Module không đăng ký bean nên không có `@ConditionalOnMissingBean`. Điểm mở rộng là **kế thừa**:
 
-- Không muốn full stack HTTP? Bỏ qua `BaseIntegrationTest`, kế thừa thẳng `PostgresContainerSupport` và tự đặt `@SpringBootTest`/`@DataJpaTest` + `@ActiveProfiles` theo ý mình — phần wiring datasource vẫn được thừa hưởng.
+- Không muốn full stack HTTP? Bỏ qua `BaseIntegrationTest`, kế thừa thẳng `PostgresContainerSupport` và tự đặt `@SpringBootTest`/`@DataJpaTest` + `@ActiveProfiles` theo ý mình — phần wiring datasource vẫn được thừa hưởng. Dùng `@DataJpaTest`/`TestEntityManager` ở Boot 4 cần thêm dependency test-scope riêng `org.springframework.boot:spring-boot-starter-data-jpa-test` — không còn kéo theo tự động qua `spring-boot-starter-data-jpa` như dòng 1.0.x (xem [CHANGELOG-2.0.md](../../CHANGELOG-2.0.md)).
 - Cần image/database khác (phiên bản Postgres khác, thêm container Redis/Kafka)? Viết support class riêng theo đúng singleton pattern của `PostgresContainerSupport` (static field + start trong static initializer + `@DynamicPropertySource`); các hằng số của lớp gốc không đổi được vì container khởi tạo cứng trong static block.
 - `Jsons.mapper()` là mapper chia sẻ — cần cấu hình khác thì tạo `ObjectMapper` riêng trong test, **đừng** mutate mapper chung.
 

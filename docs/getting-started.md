@@ -6,10 +6,10 @@ Hướng dẫn này dựng một service `orders-service` hoàn chỉnh: REST AP
 
 - JDK 21+, Maven 3.6.3+
 - Docker (cho integration test với Testcontainers)
-- javalibs đã được publish lên repository nội bộ, hoặc build local:
+- javalibs đã được publish lên GitHub Packages, hoặc build local:
 
 ```bash
-cd javalibs-root && mvn clean install
+cd javalibs-4.1 && mvn clean install
 ```
 
 ## 1. Tạo project và import BOM
@@ -23,7 +23,7 @@ Tạo Spring Boot project (qua start.spring.io hoặc archetype nội bộ) rồ
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-dependencies</artifactId>
-      <version>3.5.3</version>
+      <version>4.1.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -31,7 +31,7 @@ Tạo Spring Boot project (qua start.spring.io hoặc archetype nội bộ) rồ
     <dependency>
       <groupId>io.javalibs</groupId>
       <artifactId>javalibs-dependencies</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>2.0.0-SNAPSHOT</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>

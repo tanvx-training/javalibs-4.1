@@ -23,7 +23,7 @@ Module có **3 submodule — không có core** (không có contract thuần Java
 
 **Không dùng khi:**
 
-- Muốn style annotation `@CircuitBreaker`/`@Retry` của resilience4j — starter này **không kèm** `resilience4j-spring-boot3` + AOP; phải tự thêm (xem Ghi đè & mở rộng), khi đó auto-config của resilience4j đảm nhiệm và bean ở đây tự lùi.
+- Muốn style annotation `@CircuitBreaker`/`@Retry` của resilience4j — starter này **không kèm** `resilience4j-spring-boot4` + AOP; phải tự thêm (xem Ghi đè & mở rộng), khi đó auto-config của resilience4j đảm nhiệm và bean ở đây tự lùi.
 - Chỉ cần retry HTTP đơn giản với backoff — [javalibs-datahub](datahub.md) đã có `RetryingClientHttpRequestInterceptor` nhẹ hơn (không cần resilience4j).
 - Cần bulkhead/time-limiter — module chỉ cấu hình sẵn 3 registry (circuit breaker, retry, rate limiter); các module resilience4j khác dùng trực tiếp.
 
@@ -47,7 +47,7 @@ Luồng `intercept(request, body, execution)`:
 
 Cung cấp 3 registry seed bằng default platform — mọi breaker/retry/limiter tạo từ registry đều kế thừa:
 
-- `@AutoConfiguration(afterName = {...CircuitBreakerAutoConfiguration, ...RetryAutoConfiguration, ...RateLimiterAutoConfiguration})` — chạy **sau** các auto-config của `resilience4j-spring-boot3` (tham chiếu theo tên nên không cần dependency): nếu team thêm resilience4j-spring-boot3 để dùng annotation, registry của resilience4j được tạo trước và bean ở đây lùi.
+- `@AutoConfiguration(afterName = {...CircuitBreakerAutoConfiguration, ...RetryAutoConfiguration, ...RateLimiterAutoConfiguration})` — chạy **sau** các auto-config của `resilience4j-spring-boot4` (tham chiếu theo tên nên không cần dependency): nếu team thêm resilience4j-spring-boot4 để dùng annotation, registry của resilience4j được tạo trước và bean ở đây lùi.
 - 3 nested `@Configuration(proxyBeanMethods = false)`, mỗi cái `@ConditionalOnClass` trên registry tương ứng (module resilience4j nào vắng mặt thì phần đó tắt) và bean đều `@ConditionalOnMissingBean`:
 
 | Bean | Kiểu | Dựng từ |
@@ -93,7 +93,7 @@ Toàn bộ property bind vào `ResilienceProperties` (`javalibs.resilience.*`). 
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-resilience-spring-boot-starter</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -186,7 +186,7 @@ RestClient client = RestClient.builder()
   ```xml
   <dependency>
     <groupId>io.github.resilience4j</groupId>
-    <artifactId>resilience4j-spring-boot3</artifactId>
+    <artifactId>resilience4j-spring-boot4</artifactId>
   </dependency>
   <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -195,6 +195,13 @@ RestClient client = RestClient.builder()
   ```
 
   Nhờ `afterName`, auto-config của resilience4j chạy trước và registry của nó (cấu hình qua `resilience4j.*`) thay thế registry mặc định của javalibs — hai cách cấu hình không trộn lẫn.
+
+  **Bẫy đặt tên:** dù artifact tên là `resilience4j-spring-boot4`, package Java thật của nó là
+  `io.github.resilience4j.springboot.*` — **không có** `springboot4`/`springboot3` trong package,
+  khác với quy luật đặt tên các artifact `spring-boot-starter-*` khác. `resilience4j.version`
+  của javalibs pin **2.4.0** tường minh trong root POM (không phải property riêng service cần
+  khai) vì bản thân `resilience4j-bom:2.4.0` bỏ sót artifact `-spring-boot4` (issue upstream
+  resilience4j#2427) — import BOM `javalibs-dependencies` là đủ, không cần tự pin version.
 - **Customizer REST riêng**: khai báo bean tên `javalibsCircuitBreakingRestClientCustomizer` để thay hành vi gắn interceptor (vd breaker theo host).
 - **Tuning một breaker cụ thể khác default**: `registry.circuitBreaker("name", customConfig)` với `CircuitBreakerConfig.from(registry.getDefaultConfig())...` — default vẫn từ platform, chỉ override phần cần.
 

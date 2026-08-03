@@ -66,7 +66,7 @@ Module **không có auto-configuration và không có thuộc tính `javalibs.*`
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-spring</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

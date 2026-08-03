@@ -53,8 +53,8 @@ javalibs-root (parent POM ─ pluginManagement, dependencyManagement third-party
 └── javalibs-dependencies (BOM ─ KHÔNG có parent)
 ```
 
-- `javalibs-root` chỉ dùng **nội bộ** khi build thư viện: chốt Spring Boot 3.5.3, jjwt, resilience4j (BOM import), springdoc, mapstruct; cấu hình compiler `-parameters`, surefire, jacoco, enforcer.
-- `javalibs-dependencies` là thứ duy nhất client import. Nó **cố ý không có parent** — import BOM này chỉ pin version các artifact `javalibs-*`, không rò rỉ bất kỳ version pin nào của Spring Boot hay thư viện thứ ba sang project của bạn. Service tự chọn version Spring Boot của mình (khuyến nghị trùng 3.5.x).
+- `javalibs-root` chỉ dùng **nội bộ** khi build thư viện: chốt Spring Boot 4.1.0, jjwt, resilience4j (BOM import), springdoc, mapstruct; cấu hình compiler `-parameters`, surefire, jacoco, enforcer.
+- `javalibs-dependencies` là thứ duy nhất client import. Nó **cố ý không có parent** — import BOM này chỉ pin version các artifact `javalibs-*`, không rò rỉ bất kỳ version pin nào của Spring Boot hay thư viện thứ ba sang project của bạn. Service tự chọn version Spring Boot của mình (khuyến nghị trùng 4.1.x — dòng 2.0.x của javalibs yêu cầu Boot 4.1, xem [CHANGELOG-2.0.md](../CHANGELOG-2.0.md)).
 - Mọi jar artifact mới **bắt buộc** thêm vào BOM (build sẽ không nhắc — đây là quy tắc review, xem [contributing.md](contributing.md)).
 
 ## Bản đồ phụ thuộc giữa các module

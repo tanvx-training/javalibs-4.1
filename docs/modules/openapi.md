@@ -88,7 +88,7 @@ Class properties bind `javalibs.openapi.*` với 3 nested class `Contact`, `Secu
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-openapi-spring-boot-starter</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

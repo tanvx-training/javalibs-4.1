@@ -1,6 +1,10 @@
 # javalibs — Thư viện dùng chung cho hệ sinh thái Spring Boot microservices
 
-Bộ thư viện nội bộ chuẩn hóa cách xây dựng microservices với **Spring Boot 3.5.x / Java 21**, được phân rã thành các module độc lập để mỗi service chỉ "nhúng" đúng những gì nó cần — giảm dung lượng container và tối ưu thời gian khởi động.
+> ⚠️ **Dòng 2.0.x chạy trên Spring Boot 4.1.** Dòng 1.0.x (Spring Boot 3.5.3) nằm ở repo
+> `javalibs` và đang ở chế độ bảo trì — chỉ sửa lỗi, không thêm tính năng.
+> Breaking change khi nâng: [CHANGELOG-2.0.md](CHANGELOG-2.0.md).
+
+Bộ thư viện nội bộ chuẩn hóa cách xây dựng microservices với **Spring Boot 4.1.x / Java 21**, được phân rã thành các module độc lập để mỗi service chỉ "nhúng" đúng những gì nó cần — giảm dung lượng container và tối ưu thời gian khởi động.
 
 > 📚 **Tài liệu đầy đủ: [docs/index.md](docs/index.md)** — [Getting Started](docs/getting-started.md) · [Kiến trúc](docs/architecture.md) · [Tham chiếu cấu hình](docs/configuration-reference.md) · [Cookbook](docs/cookbook.md) · [Vận hành](docs/operations.md) · [Đóng góp](docs/contributing.md) · Tham chiếu chi tiết từng module tại [docs/modules/](docs/modules/)
 
@@ -52,7 +56,7 @@ Mỗi module phức tạp được phân rã theo chuỗi 4 tầng chuẩn:
     <dependency>
       <groupId>io.javalibs</groupId>
       <artifactId>javalibs-dependencies</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>2.0.0-SNAPSHOT</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -120,17 +124,51 @@ mvn clean install -Prelease  # kèm sources + javadoc jar (khi publish)
 
 Yêu cầu: JDK 21+, Maven 3.6.3+ (enforcer sẽ chặn nếu thiếu).
 
-## Publish lên private repository (Nexus/Artifactory)
+## Publish lên GitHub Packages
 
-`distributionManagement` đã khai báo trong root POM và BOM với repository id `javalibs-releases` / `javalibs-snapshots`; URL là property nên CI ghi đè không cần sửa POM:
+> Repo GitHub và pipeline publish thật sự được tạo ở Task 13 (đang chờ người chủ dự án duyệt,
+> chưa chạy). Nội dung dưới đây là đích cấu hình cho dòng 2.0.x — thay `<OWNER>` bằng
+> tổ chức/tài khoản GitHub thật khi Task 13 hoàn tất.
 
-```bash
-mvn -B -DskipTests deploy -Prelease \
-  -Djavalibs.distribution.releases.url=https://nexus.noi-bo/repository/maven-releases \
-  -Djavalibs.distribution.snapshots.url=https://nexus.noi-bo/repository/maven-snapshots
+Khi Task 13 chạy, `distributionManagement` trong root POM và BOM sẽ đổi từ cặp
+`javalibs-releases`/`javalibs-snapshots` (Nexus, dùng ở dòng 1.0.x — vẫn là cấu hình hiện tại
+trong `pom.xml` cho tới khi đó) sang một repository Maven duy nhất của GitHub Packages phục vụ
+cả release lẫn snapshot:
+
+```xml
+<distributionManagement>
+  <repository>
+    <id>github</id>
+    <name>GitHub Packages — javalibs</name>
+    <url>https://maven.pkg.github.com/<OWNER>/javalibs-4.1</url>
+  </repository>
+</distributionManagement>
 ```
 
-Credentials đặt trong `settings.xml` (`<server><id>javalibs-releases</id>...`). Workflow mẫu: `.github/workflows/ci.yml` — build + test mọi PR, deploy SNAPSHOT từ `main`, release từ tag `v*`.
+Deploy:
+
+```bash
+mvn -B -DskipTests deploy -Prelease
+```
+
+Credentials: GitHub Packages xác thực bằng personal access token (scope `write:packages`,
+`read:packages`) hoặc `GITHUB_TOKEN` mặc định trong GitHub Actions — khai trong `settings.xml`:
+
+```xml
+<servers>
+  <server>
+    <id>github</id>
+    <username>${env.GITHUB_ACTOR}</username>
+    <password>${env.GITHUB_TOKEN}</password>
+  </server>
+</servers>
+```
+
+Service muốn **tiêu thụ** artifact từ GitHub Packages (thay vì chỉ publish) phải khai cùng
+`<repository>` id `github` ở `<repositories>` của POM và cùng cặp credentials — GitHub Packages
+yêu cầu xác thực kể cả khi chỉ đọc package công khai trong cùng tổ chức. Workflow mẫu:
+`.github/workflows/ci.yml` — build + test mọi PR, deploy SNAPSHOT từ `master`, release từ tag
+`v*`.
 
 ## Quy tắc thiết kế (khi thêm module mới)
 

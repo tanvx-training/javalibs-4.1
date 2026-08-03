@@ -30,7 +30,7 @@ Module có **2 submodule** (không có core/spring — toàn bộ giá trị n�
 
 ### `JavalibsFlywayAutoConfiguration`
 
-- `@AutoConfiguration(beforeName = "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration")` — chạy **trước** auto-configuration Flyway của Boot để customizer được đăng ký kịp lúc Boot dựng `Flyway`.
+- `@AutoConfiguration(beforeName = "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration")` — chạy **trước** auto-configuration Flyway của Boot để customizer được đăng ký kịp lúc Boot dựng `Flyway`. FQCN đã đổi package ở Boot 4 (`...autoconfigure.flyway.*` → `...flyway.autoconfigure.*`, xem [CHANGELOG-2.0.md](../../CHANGELOG-2.0.md)); tên lớp `FlywayAutoConfiguration` giữ nguyên.
 - `@ConditionalOnClass(Flyway.class)` — không có Flyway trên classpath thì im lặng tắt.
 - `@ConditionalOnProperty(prefix = "javalibs.persistence.flyway", name = "enabled", havingValue = "true", matchIfMissing = true)` — bật sẵn, tắt bằng `enabled=false`.
 - Bean duy nhất: `javalibsFlywayDefaultsCustomizer` (`FlywayConfigurationCustomizer`, `@ConditionalOnMissingBean(name = "javalibsFlywayDefaultsCustomizer")`) — được Boot gọi khi build cấu hình Flyway, áp 4 default:
@@ -84,7 +84,7 @@ Toàn bộ property bind vào `PersistenceProperties` (`javalibs.persistence.fly
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-persistence-spring-boot-starter</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

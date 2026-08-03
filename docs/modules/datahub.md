@@ -277,7 +277,7 @@ Toàn bộ property bind vào `DatahubProperties` (`javalibs.datahub.*`):
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-datahub-spring-boot-starter</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

@@ -236,7 +236,7 @@ Bốn auto-configuration được đăng ký (theo thứ tự trong `AutoConfigu
 |---|---|---|
 | `SecurityBlacklistAutoConfiguration` | `enabled=true` (mặc định); chạy **sau** `RedisAutoConfiguration`, **trước** `JavalibsSecurityAutoConfiguration` | Bean `TokenBlacklist` theo `blacklist.mode`: `none` (mặc định — không bean, token không thể thu hồi), `in-memory` (`InMemoryTokenBlacklist`, chỉ 1 instance), `redis` (`RedisTokenBlacklist` — cần `spring-data-redis` trên classpath **và** bean `StringRedisTemplate`, Boot tự tạo khi cấu hình `spring.data.redis.*`) |
 | `JavalibsSecurityAutoConfiguration` | servlet web app, có Spring Security, `enabled=true` **và** `mode=jwt` (cả hai mặc định); chạy trước `SecurityAutoConfiguration` của Boot | `javalibsTokenValidator` (**fail-fast**: `IllegalStateException` lúc khởi động nếu không có cả `jwt.secret` lẫn `jwt.public-key` và app không tự cung cấp `TokenValidator`), `javalibsJwtAuthenticationFilter` (tự nhận `TokenBlacklist` nếu có), `javalibsRestAuthenticationEntryPoint`, `javalibsRestAccessDeniedHandler` (dùng `ObjectMapper` của app nếu có), `javalibsSecurityFilterChain` (stateless như mô tả ở trên). Tất cả đều `@ConditionalOnMissingBean` |
-| `JavalibsOAuth2ResourceServerAutoConfiguration` | như trên nhưng `mode=oauth2-resource-server` (không matchIfMissing); cần class `JwtDecoder`/`Jwt` trên classpath → app phải thêm `spring-boot-starter-oauth2-resource-server` | `javalibsUserContextJwtAuthenticationConverter` (dùng tên claim từ `javalibs.security.jwt.*`), entry point + denied handler (dùng chung với jwt mode), `javalibsOAuth2SecurityFilterChain` — chỉ tạo khi tồn tại bean `JwtDecoder` (Boot build từ `spring.security.oauth2.resourceserver.jwt.issuer-uri` hoặc `jwk-set-uri`) |
+| `JavalibsOAuth2ResourceServerAutoConfiguration` | như trên nhưng `mode=oauth2-resource-server` (không matchIfMissing); cần class `JwtDecoder`/`Jwt` trên classpath → app phải thêm `spring-boot-starter-security-oauth2-resource-server` | `javalibsUserContextJwtAuthenticationConverter` (dùng tên claim từ `javalibs.security.jwt.*`), entry point + denied handler (dùng chung với jwt mode), `javalibsOAuth2SecurityFilterChain` — chỉ tạo khi tồn tại bean `JwtDecoder` (Boot build từ `spring.security.oauth2.resourceserver.jwt.issuer-uri` hoặc `jwk-set-uri`) |
 | `SecurityWebMvcAutoConfiguration` | servlet web app + Spring MVC, `enabled=true` — **hoạt động ở cả hai mode** | `WebMvcConfigurer` đăng ký `RequireRoleInterceptor` và `CurrentUserArgumentResolver` |
 
 ### javalibs-security-test (package `io.javalibs.security.test`)
@@ -625,7 +625,7 @@ Thêm dependency vào service:
 ```xml
 <dependency>
   <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+  <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
 </dependency>
 ```
 
@@ -679,6 +679,6 @@ Mọi bean auto-configure đều có `@ConditionalOnMissingBean` — chỉ cần
 9. **Tự khai báo `SecurityFilterChain`** → chain mặc định biến mất hoàn toàn, gồm cả permit-all và error handler; phải tự `addFilterBefore(jwtAuthenticationFilter, ...)` và tự cấu hình `exceptionHandling` nếu vẫn muốn hành vi cũ.
 10. **`@RequireRole` chỉ chặn ở tầng Spring MVC handler** (HandlerInterceptor) — gọi nội bộ giữa các service method không bị chặn; logic phân quyền tầng service dùng `UserContextHolder.require()` + `hasRole/hasAnyRole` hoặc `@PreAuthorize`.
 11. **`UserContextHolder` gắn với thread hiện tại** — sang thread khác (`@Async`, thread pool) sẽ mất context; truyền `UserContext` qua tham số, hoặc xem cơ chế propagation MDC bên [javalibs-observability](observability.md) làm hình mẫu (SecurityContext không được tự lan truyền).
-12. **Mode `oauth2-resource-server` không có `JwtDecoder`** (quên `issuer-uri`/`jwk-set-uri` hoặc quên dependency `spring-boot-starter-oauth2-resource-server`) → chain của javalibs không được tạo; nếu Spring Security còn trên classpath, Boot áp chain mặc định của nó — kiểm tra log khởi động khi 401 trả về không đúng format JSON kỳ vọng.
+12. **Mode `oauth2-resource-server` không có `JwtDecoder`** (quên `issuer-uri`/`jwk-set-uri` hoặc quên dependency `spring-boot-starter-security-oauth2-resource-server`) → chain của javalibs không được tạo; nếu Spring Security còn trên classpath, Boot áp chain mặc định của nó — kiểm tra log khởi động khi 401 trả về không đúng format JSON kỳ vọng.
 13. **Clock skew mặc định 30s** — token "hết hạn" vẫn được chấp nhận thêm tối đa 30 giây; đặt `clock-skew: 0s` nếu cần nghiêm ngặt tuyệt đối.
 14. **Quên thêm `/auth/**` vào `permit-all`** (issuer) → `JwtAuthenticationFilter` chặn ngay cả `/auth/login`, trả 401 dù credentials đúng — xem [Phát hành token (issuer)](#phát-hành-token-issuer). `javalibs-security-issuer` phải có mặt tường minh trên classpath (không tự kéo theo bởi starter) để `SecurityIssuerAutoConfiguration` kích hoạt; thiếu một trong hai bean `CredentialsStore`/`RefreshTokenStore` (mặc định do `javalibs-authz-jpa` cung cấp) → bean `AuthenticationService`/`AuthEndpoints` không được tạo, không có lỗi khởi động rõ ràng — kiểm tra log `@ConditionalOnBean` khi `/auth/*` trả 404.

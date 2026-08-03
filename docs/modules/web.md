@@ -10,7 +10,7 @@
 | `javalibs-web-core` | jar | Hợp đồng thuần Java, **zero dependency runtime**: `ApiResponse`, `PageResponse`, `ErrorResponse`, `ErrorCode`/`CommonErrorCode`/`BusinessErrorCode`, các exception chuẩn. Package `io.javalibs.web` |
 | `javalibs-web-spring` | jar | Tích hợp Spring MVC: `GlobalExceptionHandler` (`@RestControllerAdvice`), `RequestLoggingFilter` (`OncePerRequestFilter`), `CorsSupport`. Package `io.javalibs.web.spring` |
 | `javalibs-web-spring-boot-autoconfigure` | jar | `WebAutoConfiguration`, `RequestLoggingAutoConfiguration`, `CorsAutoConfiguration` + `WebProperties` (namespace `javalibs.web.*`). Package `io.javalibs.web.autoconfigure` |
-| `javalibs-web-spring-boot-starter` | jar | Starter không chứa code: kéo core + spring + autoconfigure + `spring-boot-starter-web` + `spring-boot-starter-validation` |
+| `javalibs-web-spring-boot-starter` | jar | Starter không chứa code: kéo core + spring + autoconfigure + `spring-boot-starter-webmvc` (đổi tên từ `spring-boot-starter-web` ở Boot 4, xem [CHANGELOG-2.0.md](../../CHANGELOG-2.0.md)) + `spring-boot-starter-validation` |
 
 ## Khi nào dùng / không dùng
 
@@ -171,7 +171,7 @@ Toàn bộ property bind vào record `WebProperties` (`javalibs.web.*`):
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-web-spring-boot-starter</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

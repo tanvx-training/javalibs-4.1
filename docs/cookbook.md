@@ -136,7 +136,7 @@ Không đổi một dòng code nghiệp vụ — `@RequireRole`, `@CurrentUser`,
 ```xml
 <dependency>
   <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+  <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
 </dependency>
 ```
 

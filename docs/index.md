@@ -1,6 +1,9 @@
 # Tài liệu javalibs
 
-Bộ thư viện dùng chung chuẩn hóa cách xây dựng microservices với **Spring Boot 3.5.x / Java 21**.
+Bộ thư viện dùng chung chuẩn hóa cách xây dựng microservices với **Spring Boot 4.1.x / Java 21**.
+
+> Dòng 2.0.x (tài liệu này) chạy trên Spring Boot 4.1. Breaking change so với dòng 1.0.x
+> (Spring Boot 3.5.3, đang bảo trì): [CHANGELOG-2.0.md](../CHANGELOG-2.0.md).
 
 ## Bắt đầu
 
@@ -11,7 +14,7 @@ Bộ thư viện dùng chung chuẩn hóa cách xây dựng microservices với 
 | [Kiến trúc](architecture.md) | Mô hình 4 tầng core → spring → autoconfigure → starter, nguyên tắc thiết kế, cách auto-configuration hoạt động |
 | [Tham chiếu cấu hình](configuration-reference.md) | Bảng tra cứu **toàn bộ** thuộc tính `javalibs.*` của mọi module |
 | [Cookbook](cookbook.md) | Công thức cho các tình huống thực tế: outbox, revoke token, Keycloak, search API, error catalog... |
-| [Vận hành](operations.md) | Build, versioning, publish lên Nexus/Artifactory, CI/CD, nâng cấp Spring Boot |
+| [Vận hành](operations.md) | Build, versioning, publish lên GitHub Packages, CI/CD, nâng cấp Spring Boot |
 | [Đóng góp](contributing.md) | Quy tắc thêm module mới, checklist review |
 
 ## Tham chiếu module
@@ -55,7 +58,7 @@ Bộ thư viện dùng chung chuẩn hóa cách xây dựng microservices với 
 | REST API chuẩn lỗi/phân trang | `javalibs-web-spring-boot-starter` | — |
 | Xác thực JWT | `javalibs-security-spring-boot-starter` | `javalibs.security.jwt.secret` |
 | Thu hồi token | (như trên) | `javalibs.security.blacklist.mode=redis` |
-| Đăng nhập qua Keycloak | (như trên) + `spring-boot-starter-oauth2-resource-server` | `javalibs.security.mode=oauth2-resource-server` |
+| Đăng nhập qua Keycloak | (như trên) + `spring-boot-starter-security-oauth2-resource-server` | `javalibs.security.mode=oauth2-resource-server` |
 | Tự phát hành token (login/refresh/logout) | (như trên) + `javalibs-security-issuer` | `javalibs.security.issuer.*` + `/auth/**` trong `permit-all` |
 | Phân quyền per-resource (project, tenant...) | `javalibs-authz-spring-boot-starter` + `javalibs-authz-jpa` | Khai báo `PermissionCatalog`, dùng `@RequirePermission`/`PermissionChecker` |
 | Bắn event Kafka an toàn | `javalibs-datahub-spring-boot-starter` | `javalibs.datahub.outbox.enabled=true` + migration |

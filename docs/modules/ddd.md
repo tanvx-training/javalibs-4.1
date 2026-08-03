@@ -118,12 +118,12 @@ Dependency (tầng domain chỉ cần core; app Spring Boot thêm spring):
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-ddd-core</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-ddd-spring</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

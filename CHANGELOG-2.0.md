@@ -1,7 +1,9 @@
 # javalibs 2.0.x — Breaking changes so với 1.0.x
 
-Dòng 2.0.x chạy trên **Spring Boot 4.1** (1.0.x ở 3.5.3). Java baseline giữ nguyên **21**.
-groupId `io.javalibs` và mọi artifactId giữ nguyên — chỉ dòng version đổi.
+Dòng 2.0.x chạy trên **Spring Boot 4.1.0** / **Spring Framework 7.0.8** (1.0.x ở Boot 3.5.3 /
+Spring Framework 6.2.8). Java baseline giữ nguyên **21**. Hibernate ORM baseline đi kèm Boot
+lên **7.4.1.Final** (1.0.x ở 6.6.18.Final). groupId `io.javalibs` và mọi artifactId giữ
+nguyên — chỉ dòng version đổi.
 
 ## Bắt buộc sửa khi nâng
 
@@ -17,6 +19,17 @@ _(bồi dần theo từng bậc migration)_
   `-authorization-server`). Service dùng mode `oauth2-resource-server` phải đổi.
 - **Spring Security 7.** API nội bộ của javalibs-security đã cập nhật; `UserContext`,
   `@RequireRole`, `@CurrentUser` giữ nguyên chữ ký nên service không phải sửa code.
+- **Hibernate ORM 6.6.18.Final → 7.4.1.Final.** Baseline đi kèm BOM Spring Boot 4.1, không
+  phải property riêng của javalibs. `javalibs-persistence`, `javalibs-search`, `javalibs-authz`
+  (bậc 7) build xanh không cần sửa entity/repository — API JPA/Hibernate mà các module này
+  và service dùng qua Spring Data JPA không đổi chữ ký. Các dời-chỗ package tự động cấu hình
+  liên quan (`HibernateJpaAutoConfiguration`, `@EntityScan`, `@DataJpaTest`/`TestEntityManager`)
+  liệt kê riêng ở các mục dưới.
+- **springdoc-openapi 2.8.9 → 3.1.0.** Chỉ là version bump ở `javalibs-openapi` — 0 dòng Java
+  đổi, springdoc 3.1.0 tự pin `spring-boot-starter-parent:4.1.0` nên resolve sạch về Spring
+  Framework 7.0.8, không kéo ngược artifact 6.x nào. Service import
+  `javalibs-openapi-spring-boot-starter` không phải làm gì; service tự khai springdoc riêng
+  (không qua javalibs) phải tự nâng lên dòng 3.x.
 - **Testcontainers 1.x → 2.x.** Artifact `org.testcontainers:postgresql` →
   `org.testcontainers:testcontainers-postgresql`; package
   `org.testcontainers.containers.PostgreSQLContainer` →
@@ -25,6 +38,13 @@ _(bồi dần theo từng bậc migration)_
   TC 2.x không còn generic tự-tham-chiếu (`PostgreSQLContainer<Self>`) — service khai kiểu
   tường minh dạng `PostgreSQLContainer<?> pg = ...` phải bỏ tham số generic
   (`PostgreSQLContainer pg = ...`).
+- **`io.javalibs.test.PostgresContainerSupport.postgres()` đổi kiểu trả về công khai:**
+  `protected static PostgreSQLContainer<?> postgres()` →
+  `protected static PostgreSQLContainer postgres()` (hệ quả trực tiếp của việc TC 2.x bỏ
+  generic tự-tham-chiếu ở trên). Service kế thừa `BaseIntegrationTest`/`PostgresContainerSupport`
+  và gọi `postgres()` để chạy fixture SQL trực tiếp mà khai biến cục bộ kiểu
+  `PostgreSQLContainer<?> c = postgres();` phải bỏ `<?>`; gọi qua `var` hoặc chaining method
+  không bị ảnh hưởng.
 - **`BaseIntegrationTest` nay mang `@AutoConfigureTestRestTemplate`** — Boot 4 không còn
   tự cấp `TestRestTemplate` cho `@SpringBootTest`. Test kế thừa không phải sửa gì;
   test tự khai `@SpringBootTest` mà dùng `TestRestTemplate` thì phải tự thêm annotation.
@@ -63,7 +83,8 @@ _(bồi dần theo từng bậc migration)_
   `java.time` nay có sẵn trong `jackson-databind`, không cần đăng ký module. Ngoại lệ:
   `jjwt-jackson` (JJWT) chưa lên Jackson 3 nên `javalibs-security-issuer` vẫn kéo
   `com.fasterxml.jackson.datatype:jackson-datatype-jsr310` (Jackson 2) làm phụ thuộc runtime
-  cho riêng JJWT — không liên quan tới `ObjectMapper` mà service tự inject.
+  cho riêng JJWT — không liên quan tới `ObjectMapper` mà service tự inject. Xem mục
+  **"Jackson 2.x còn sót trong dependency tree"** ở dưới — bức tranh đầy đủ, không chỉ JJWT.
 - **`DataSourceAutoConfiguration`/`DataSourceTransactionManagerAutoConfiguration` dời package:**
   `org.springframework.boot.autoconfigure.jdbc.*` → `org.springframework.boot.jdbc.autoconfigure.*`
   (artifact `org.springframework.boot:spring-boot-jdbc`, khai optional).
@@ -101,11 +122,100 @@ _(bồi dần theo từng bậc migration)_
 
 _(mọi test bị sửa vì hành vi đổi — loại (b) — phải có mục ở đây)_
 
+**Rỗng, có chủ đích — đã kiểm chứng qua toàn bộ 12 task migration (bậc 0–9 + test bảo vệ),
+không phải bỏ sót.** Mọi sửa đổi test trong suốt migration đều được phân loại (a) — API dời
+chỗ/đổi arity do Boot 4/Spring 7/Jackson 3/Testcontainers 2 tự đổi, không phải javalibs chủ
+động đổi hành vi; assertion và kỳ vọng của test giữ nguyên. Bằng chứng cụ thể nhất, ở đúng chỗ
+rủi ro hành vi cao nhất (serialize cache): `RedisSerializerFormatTest` — chụp hình dạng JSON
+trên Boot 3.5.3/Jackson 2 và **không được sửa** khi Task 10 chuyển sang Jackson 3 — vẫn xanh
+sau migration (xem mục "Mốc định dạng cache Redis" bên dưới). Nếu một task tương lai đổi hành
+vi thật (ví dụ xử lý nợ kỹ thuật ở mục "Để lại cho sau" dưới đây), mục này phải có entry.
+
 ## Để lại cho sau
 
 - **`RedisCacheConfigurations` dùng `activateDefaultTyping` với validator chấp nhận mọi
-  subtype** (`LaissezFaireSubTypeValidator`). Đây là mẫu có rủi ro deserialization. Giữ
-  nguyên ở 2.0.0 vì sửa nó là đổi hành vi; xử lý ở một thay đổi riêng có chủ đích.
+  subtype.** Ở dòng 1.0.x đây là `LaissezFaireSubTypeValidator` của Jackson 2 (public API).
+  Jackson 3 vẫn có lớp y hệt về logic
+  (`tools.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator`) nhưng đã thu hẹp
+  xuống package-private, không còn là API tương thích để gọi từ ngoài — nên
+  `javalibs-cache-spring` (bậc 8, `RedisCacheConfigurations.java`) tự viết lớp thay thế
+  `UnsafeAnySubTypeValidator` (private, nội bộ module), sao lại đúng ba phương thức
+  (`validateBaseType` → `INDETERMINATE`, `validateSubClassName`/`validateSubType` →
+  `ALLOWED`) đã disassemble để xác nhận khớp bytecode gốc. Đây là mẫu có rủi ro
+  deserialization (chấp nhận mọi subtype khi polymorphic deserialize). **Nợ kỹ thuật không
+  đổi, chỉ đổi chỗ ở** — giữ nguyên ở 2.0.0 vì sửa nó (thu hẹp danh sách subtype được phép) là
+  đổi hành vi thật; xử lý ở một thay đổi riêng có chủ đích, không lẫn vào migration này.
+
+## Jackson 2.x còn sót trong dependency tree (không kiểm soát được)
+
+**Sự thật, không diễn giải cho qua:** `mvn dependency:tree` ở dòng 2.0.x vẫn liệt kê nhiều
+artifact `com.fasterxml.jackson.*` phiên bản 2.x. Code Java của javalibs **hoàn toàn** ở
+Jackson 3 (`tools.jackson.*`) từ bậc 8 — không còn `import com.fasterxml.jackson.databind.*`
+nào trong `src/main` của javalibs. Nhưng hai lớp lý do khiến Jackson 2 vẫn nằm trên classpath
+runtime của một số module, ngoài tầm kiểm soát của javalibs:
+
+1. **`com.fasterxml.jackson.core:jackson-annotations:2.21` — xuất hiện ở HẦU HẾT module dùng
+   Jackson.** Đây không phải lỗi hay sót của javalibs: bản thân `tools.jackson.core:jackson-databind`
+   (Jackson 3.1.4, artifact CHÍNH THỐNG của Jackson 3) khai `jackson-annotations` như một
+   dependency bắt buộc, và annotations module giữ nguyên groupId/artifactId lịch sử
+   (`com.fasterxml.jackson.core:jackson-annotations`) với dòng version riêng 2.x — annotations
+   dùng chung được cho cả hệ Jackson 2 lẫn 3 nên không cần rearchitect. Bằng chứng: Spring Boot
+   4.1 tự import CẢ HAI BOM `com.fasterxml.jackson:jackson-bom:2.21.4` lẫn
+   `tools.jackson:jackson-bom:3.1.4` trong `spring-boot-dependencies` (thấy ở
+   `spring-boot-dependencies-4.1.0.pom`, property `jackson-2-bom.version` / `jackson-bom.version`),
+   tức Boot 4.1 CHÍNH THỨC coi việc Jackson 2 và 3 cùng tồn tại trên classpath là trạng thái
+   bình thường của hệ sinh thái trong giai đoạn chuyển tiếp. **Đây không phải "còn sót Jackson
+   2.x" theo nghĩa DoD lo ngại** (không có `jackson-databind`/`jackson-core` 2.x nào bị dùng để
+   serialize dữ liệu của javalibs) — chỉ là artifact annotation dùng chung, an toàn.
+2. **Full stack Jackson 2 (`jackson-core` + `jackson-databind` + `jackson-datatype-jsr310`, đều
+   2.21.4) — hai nguồn thật, có chủ đích, không gỡ được:**
+   - `javalibs-security-issuer`: thư viện `io.jsonwebtoken:jjwt-jackson:0.12.6` (serializer JSON
+     cho JJWT) chỉ hỗ trợ Jackson 2, chưa có bản Jackson 3. Module tự khai
+     `jackson-datatype-jsr310` (compile) và `jackson-databind` (test) bằng coordinate Jackson 2
+     `com.fasterxml.jackson.*` để phục vụ riêng JJWT — **không liên quan** tới `ObjectMapper`
+     Jackson 3 mà service tự inject qua DI. Lan transitively (optional) sang
+     `javalibs-authz-jpa` vì module đó phụ thuộc optional vào `javalibs-security-issuer`.
+   - `javalibs-openapi`: springdoc-openapi 3.1.0 → `io.swagger.core.v3:swagger-core-jakarta:2.2.52`
+     → `io.swagger.core.v3:swagger-models-jakarta:2.2.52`, kéo **compile-scope** (không phải
+     optional) `jackson-databind`/`jackson-core`/`jackson-dataformat-yaml`/
+     `jackson-datatype-jsr310` ở 2.21.4 vì swagger-models-jakarta bản thân chưa nâng Jackson 3.
+     Dependency `springdoc-openapi` của javalibs vẫn khai `<optional>true</optional>` đúng quy
+     ước, nhưng bản thân stack Jackson 2 mà nó kéo theo là compile scope trong cây phụ thuộc của
+     swagger, không optional.
+
+**Ý nghĩa với người nâng cấp:** service dùng `javalibs-security-spring-boot-starter` (qua
+`javalibs-security-issuer`) hoặc `javalibs-openapi-spring-boot-starter` sẽ có **hai stack
+Jackson cùng nằm trên classpath runtime** — Jackson 3 (`tools.jackson.*`, dùng cho
+`ObjectMapper` chính, cache Redis, REST request/response body) và Jackson 2
+(`com.fasterxml.jackson.*`, chỉ dùng nội bộ bởi JJWT và bởi swagger-models khi springdoc build
+tài liệu OpenAPI). Hai stack không tương tác, không đọc/ghi chung dữ liệu, không xung đột
+runtime. Không cần hành động gì để "dọn sạch" — cả hai nguồn đều là phụ thuộc bên thứ ba
+javalibs không kiểm soát; theo dõi `jjwt-jackson` (JJWT project) và `swagger-models-jakarta`
+(springdoc/swagger-core project) để biết khi nào họ phát hành bản Jackson 3.
+
+**Cảnh báo về lệnh nghiệm thu DoD của spec** — chạy đúng nguyên văn:
+
+```
+mvn -q dependency:tree 2>&1 | grep -E ":(3\.[0-9]+\.[0-9]+)" | grep -E "spring-boot|jackson|testcontainers" \
+  || echo "SẠCH: không còn Boot 3.x / Jackson 2.x / Testcontainers 1.x"
+```
+
+lệnh này **IN RA "SẠCH"** — nhưng đó là kết quả giả, không phải bằng chứng thật. Cờ `-q` của
+Maven làm goal `dependency:tree` (in qua logger mức INFO) **im lặng hoàn toàn** trên reactor
+nhiều module — `mvn -q dependency:tree` một mình, không qua grep gì cả, đã cho ra **0 dòng output**
+(đã tự kiểm chứng). Vì grep không nhận được input nào để khớp, `||` luôn rơi vào nhánh
+`echo "SẠCH"`, **bất kể dependency tree thật sự chứa gì**. Đây không phải lỗi diễn giải regex —
+đây là lệnh không hề chạy phép kiểm nào cả.
+
+Chạy đúng cách (bỏ `-q`, hoặc dùng `-DoutputFile` không kèm `-q`) mới cho kết quả thật:
+Spring Boot 3.x và Testcontainers 1.x **sạch tuyệt đối** — 0 artifact của hai nhóm này ở bất kỳ
+module nào. Nhưng Jackson 2.x thì **không sạch** — các dòng `2.21.4`/`2.21` nêu ở trên có thật
+trong `javalibs-security-issuer`, `javalibs-authz-jpa` (transitively) và `javalibs-openapi`.
+Thêm một lớp nhiễu thứ hai nếu ai đó sửa lại lệnh bằng cách bỏ `-q`: regex `3\.[0-9]+\.[0-9]+`
+của DoD khớp nhầm chính các dòng `tools.jackson.core:...:jar:3.1.4` (Jackson 3 — ĐÚNG, không
+phải lỗi) vì nó không phân biệt groupId `tools.jackson` (mới) với `com.fasterxml.jackson` (cũ);
+diễn giải đúng đòi hỏi lọc theo groupId, không chỉ theo số phiên bản. Xem báo cáo Task 14
+(`task-14-report.md`) để có output thật (cả hai cách chạy) kèm phân tích từng dòng.
 
 ## Mốc định dạng cache Redis ở dòng 1.0.x
 
@@ -115,3 +225,10 @@ mốc này để biết Jackson 3 có làm đổi định dạng hay không:
 ```json
 {"@class":"DumpFormat$Sample","name":"tour","day":["java.time.LocalDate","2026-08-02"]}
 ```
+
+**Kết luận: định dạng KHÔNG đổi — byte-for-byte giống 1.0.x.** `RedisSerializerFormatTest`
+giữ nguyên nội dung từ trước migration (không được sửa để "vừa" hành vi mới — xem mục "Thay
+đổi hành vi" ở trên) và vẫn xanh trên Jackson 3: entry vẫn nhúng `"@class"` với FQCN đầy đủ,
+`java.time.LocalDate` vẫn serialize dạng mảng ISO `["java.time.LocalDate","2026-08-02"]`.
+**Service nâng lên javalibs 2.0.x không cần flush cache Redis** — entry cũ (ghi bởi 1.0.x)
+deserialize được bình thường bởi code 2.0.x, và ngược lại trong giai đoạn rolling upgrade.

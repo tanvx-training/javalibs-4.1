@@ -10,7 +10,7 @@
 | `javalibs-cache-core` | jar | Thuần Java, zero dependency runtime: `CacheKeys` (quy ước key), `CacheSpec` (tuning ttl/max-size). Package `io.javalibs.cache` |
 | `javalibs-cache-spring` | jar | Building block theo provider: `RedisCacheConfigurations` (JSON + prefix + TTL), `CaffeineCaches`. spring-data-redis / caffeine / jackson đều *optional*. Package `io.javalibs.cache.spring` |
 | `javalibs-cache-spring-boot-autoconfigure` | jar | `JavalibsRedisCacheAutoConfiguration`, `JavalibsCaffeineCacheAutoConfiguration`, `ProviderConditions` + `JavalibsCacheProperties` (namespace `javalibs.cache.*`). Package `io.javalibs.cache.autoconfigure` |
-| `javalibs-cache-spring-boot-starter` | jar | Starter: core + spring + autoconfigure + `spring-boot-starter-cache` + **caffeine** + jackson-databind + jackson-datatype-jsr310. **Không kèm `spring-boot-starter-data-redis`** — ứng dụng muốn Redis phải tự thêm |
+| `javalibs-cache-spring-boot-starter` | jar | Starter: core + spring + autoconfigure + `spring-boot-starter-cache` + **caffeine** + `tools.jackson.core:jackson-databind` (Jackson 3 — `jackson-datatype-jsr310` không còn là dependency riêng, `java.time` nay có sẵn trong `jackson-databind`). **Không kèm `spring-boot-starter-data-redis`** — ứng dụng muốn Redis phải tự thêm |
 
 ## Khi nào dùng / không dùng
 
@@ -53,7 +53,16 @@ Tuning theo cache, độc lập provider: `record CacheSpec(Duration ttl, Long m
 Factory cho `RedisCacheConfiguration` chuẩn javalibs:
 
 - `static RedisCacheConfiguration standard(String keyPrefix, Duration ttl, boolean cacheNullValues)` — key String với `prefixCacheNameWith(keyPrefix + "::")` ⇒ **key đầy đủ `<prefix>::<cacheName>::<key>`**, value JSON, `entryTtl(ttl)`; `cacheNullValues=false` thì `disableCachingNullValues()`.
-- `static GenericJackson2JsonRedisSerializer jsonSerializer()` — `ObjectMapper` riêng với `JavaTimeModule`, tắt `WRITE_DATES_AS_TIMESTAMPS` (date dạng ISO), đăng ký null-value serializer, và `activateDefaultTyping(LaissezFaireSubTypeValidator, DefaultTyping.EVERYTHING, As.PROPERTY)`.
+- `static GenericJacksonJsonRedisSerializer jsonSerializer()` (Jackson 3 — đổi từ
+  `GenericJackson2JsonRedisSerializer` ở dòng 1.0.x, xem [CHANGELOG-2.0.md](../../CHANGELOG-2.0.md)):
+  `GenericJacksonJsonRedisSerializer.builder().enableSpringCacheNullValueSupport().customize(...)`,
+  tắt `DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS` (date dạng ISO — hỗ trợ `java.time` nay có sẵn
+  trong `jackson-databind`, không cần đăng ký `JavaTimeModule` riêng nữa), và
+  `setDefaultTyping(...)` với hai lớp nội bộ tự viết để giữ **đúng hành vi cũ byte-for-byte**
+  (Jackson 3 không còn `DefaultTyping.EVERYTHING` public lẫn `LaissezFaireSubTypeValidator`
+  public — xem javadoc của `RedisCacheConfigurations` và mục "Để lại cho sau" trong CHANGELOG):
+  `EverythingTypeResolverBuilder` (type mọi giá trị non-primitive, như `EVERYTHING` cũ) +
+  `UnsafeAnySubTypeValidator` (chấp nhận mọi subtype, như `LaissezFaireSubTypeValidator` cũ).
 
 **Trade-off serialize (quan trọng)**: default typing nhúng **tên class Java vào JSON qua property `@class`** để deserialize không cần cấu hình type cho từng cache (record/final class round-trip được). Hệ quả:
 
@@ -118,7 +127,7 @@ Toàn bộ property bind vào `JavalibsCacheProperties` (`javalibs.cache.*`):
 <dependency>
   <groupId>io.javalibs</groupId>
   <artifactId>javalibs-cache-spring-boot-starter</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 
 <!-- Muốn dùng Redis? Ứng dụng tự thêm (starter KHÔNG kèm): -->
