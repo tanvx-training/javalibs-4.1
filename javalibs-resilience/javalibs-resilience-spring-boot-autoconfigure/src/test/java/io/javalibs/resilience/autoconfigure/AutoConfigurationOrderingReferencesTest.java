@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,11 +35,58 @@ import static org.assertj.core.api.Assertions.assertThat;
  * every {@code org.springframework.boot.*} or {@code io.github.resilience4j.*} reference resolves
  * on this module's test classpath (the resilience4j-spring-boot4 artifact is a test-only
  * dependency added specifically so this assertion is meaningful — see this module's pom.xml).</p>
+ *
+ * <p><b>Task 12 addendum:</b> the two methods below ({@code importsFileExistsAndIsNotEmpty} and
+ * {@code everyListedClassIsLoadableAndAnnotated}) close the remaining gap versus the standalone
+ * {@code AutoConfigurationImportsTest} added to the other 9 autoconfigure modules — they were
+ * merged into this existing class instead of duplicated into a new file, since the ordering-check
+ * above already re-derives the class list from the same {@code .imports} file. They read the
+ * file by relative path (surefire's working directory is this module's basedir), which is the
+ * Task 12 convention across all 13 modules for pinning the check to THIS module's own file
+ * rather than whatever same-named resource resolves first on the test classpath.</p>
  */
 class AutoConfigurationOrderingReferencesTest {
 
     private static final String IMPORTS_RESOURCE =
             "/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports";
+
+    private static final Path IMPORTS_FILE = Path.of(
+            "src/main/resources/META-INF/spring",
+            "org.springframework.boot.autoconfigure.AutoConfiguration.imports");
+
+    @Test
+    void importsFileExistsAndIsNotEmpty() throws IOException {
+        assertThat(IMPORTS_FILE).exists();
+        assertThat(importsFileEntries()).isNotEmpty();
+    }
+
+    @Test
+    void everyListedClassIsLoadableAndAnnotated() throws IOException {
+        for (String className : importsFileEntries()) {
+            Class<?> type = assertLoadableFromImportsFile(className);
+            assertThat(type.getAnnotations())
+                    .as("%s phải mang @AutoConfiguration", className)
+                    .anyMatch(a -> a.annotationType().getName()
+                            .equals("org.springframework.boot.autoconfigure.AutoConfiguration"));
+        }
+    }
+
+    private static Class<?> assertLoadableFromImportsFile(String className) {
+        try {
+            return Class.forName(className, false,
+                    AutoConfigurationOrderingReferencesTest.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(
+                    "File .imports liệt kê lớp không tồn tại: " + className, e);
+        }
+    }
+
+    private static List<String> importsFileEntries() throws IOException {
+        return Files.readAllLines(IMPORTS_FILE).stream()
+                .map(String::trim)
+                .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                .toList();
+    }
 
     @Test
     void everyOrderingReferenceResolvesOnTheClasspath() throws Exception {
