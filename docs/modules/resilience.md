@@ -190,7 +190,7 @@ RestClient client = RestClient.builder()
   </dependency>
   <dependency>
     <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-aop</artifactId>
+    <artifactId>spring-boot-starter-aspectj</artifactId>
   </dependency>
   ```
 

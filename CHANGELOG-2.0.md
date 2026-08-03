@@ -12,11 +12,19 @@ _(bồi dần theo từng bậc migration)_
 - **Spring Boot baseline: 3.5.3 → 4.1.x.** Service dùng javalibs 2.0.x phải chạy trên
   Spring Boot 4.1. Dòng 3.5 đã hết vòng đời OSS ngày 30/06/2026.
 - **Java baseline giữ nguyên 21** — không cần nâng JDK khi lên 2.0.x.
-- **`spring-boot-starter-web` → `spring-boot-starter-webmvc`.** `javalibs-web-spring-boot-starter`
-  đã kéo starter mới; service nào tự khai `spring-boot-starter-web` phải tự đổi tên.
-- **Starter OAuth2 đổi tên:** `spring-boot-starter-oauth2-resource-server` →
-  `spring-boot-starter-security-oauth2-resource-server` (tương tự cho `-client`,
-  `-authorization-server`). Service dùng mode `oauth2-resource-server` phải đổi.
+- **`spring-boot-starter-web` → `spring-boot-starter-webmvc` (deprecated, nên đổi — chưa bắt
+  buộc).** `javalibs-web-spring-boot-starter` đã kéo starter mới. Đã kiểm:
+  `spring-boot-starter-web:4.1.0` **vẫn được publish** trên Maven Central (HTTP 200), mô tả
+  POM ghi "deprecated in favor of spring-boot-starter-webmvc" — service tự khai
+  `spring-boot-starter-web` vẫn resolve và build xanh, không bắt buộc đổi ngay khi bump Boot.
+  Nên đổi tên sớm vì artifact cũ đã deprecated, có thể bị gỡ ở một bản Boot sau này.
+- **Starter OAuth2 đổi tên (deprecated, nên đổi — chưa bắt buộc):**
+  `spring-boot-starter-oauth2-resource-server` → `spring-boot-starter-security-oauth2-resource-server`
+  (tương tự cho `-client`, `-authorization-server`). Đã kiểm:
+  `spring-boot-starter-oauth2-resource-server:4.1.0` vẫn được publish (HTTP 200), mô tả
+  "deprecated in favor of ...". Service dùng mode `oauth2-resource-server` với tên cũ vẫn build
+  xanh; nên đổi sớm để tách việc rename khỏi việc bump Boot thay vì đợi artifact cũ ngừng
+  publish ở một bản Boot sau.
 - **Spring Security 7.** API nội bộ của javalibs-security đã cập nhật; `UserContext`,
   `@RequireRole`, `@CurrentUser` giữ nguyên chữ ký nên service không phải sửa code.
 - **Hibernate ORM 6.6.18.Final → 7.4.1.Final.** Baseline đi kèm BOM Spring Boot 4.1, không
@@ -81,10 +89,16 @@ _(bồi dần theo từng bậc migration)_
   Artifact `com.fasterxml.jackson.core:jackson-databind` → `tools.jackson.core:jackson-databind`;
   `com.fasterxml.jackson.datatype:jackson-datatype-jsr310` không còn tồn tại — hỗ trợ
   `java.time` nay có sẵn trong `jackson-databind`, không cần đăng ký module. Ngoại lệ:
-  `jjwt-jackson` (JJWT) chưa lên Jackson 3 nên `javalibs-security-issuer` vẫn kéo
-  `com.fasterxml.jackson.datatype:jackson-datatype-jsr310` (Jackson 2) làm phụ thuộc runtime
-  cho riêng JJWT — không liên quan tới `ObjectMapper` mà service tự inject. Xem mục
-  **"Jackson 2.x còn sót trong dependency tree"** ở dưới — bức tranh đầy đủ, không chỉ JJWT.
+  `jjwt-jackson:0.12.6` (JJWT) chưa lên Jackson 3, tự khai
+  `com.fasterxml.jackson.core:jackson-databind` (Jackson 2, runtime) làm dependency riêng của
+  nó. Module khai `jjwt-jackson` là **`javalibs-security-core`** (không phải
+  `javalibs-security-issuer`) — đã xác nhận bằng `mvn dependency:tree` trên
+  `javalibs-security-spring-boot-starter`: cây chỉ đi qua `javalibs-security-core`, không hề có
+  `javalibs-security-issuer` (module này khai `<optional>true</optional>`, không tự kéo vào cây
+  của consumer). Vì vậy `jackson-databind` 2.x runtime lan sang **mọi** consumer của
+  `javalibs-security-spring-boot-starter`, kể cả service chỉ validate JWT (không phát hành
+  token, không dùng issuer) — không liên quan tới `ObjectMapper` Jackson 3 mà service tự inject
+  qua DI. Xem mục **"Jackson 2.x còn sót trong dependency tree"** ở dưới — bức tranh đầy đủ.
 - **`DataSourceAutoConfiguration`/`DataSourceTransactionManagerAutoConfiguration` dời package:**
   `org.springframework.boot.autoconfigure.jdbc.*` → `org.springframework.boot.jdbc.autoconfigure.*`
   (artifact `org.springframework.boot:spring-boot-jdbc`, khai optional).
@@ -117,6 +131,26 @@ _(bồi dần theo từng bậc migration)_
   `org.springframework.boot.restclient.RestClientCustomizer` (artifact
   `org.springframework.boot:spring-boot-restclient`, khai optional). Service tự implement
   `RestClientCustomizer` (ví dụ để tùy biến `RestClient.Builder` do Boot cấp) phải đổi import.
+- **`spring-boot-starter-aop` không còn tồn tại ở Boot 4.1 — đổi tên thành
+  `spring-boot-starter-aspectj`.** Đã kiểm: `spring-boot-starter-aop:4.1.0` trả **HTTP 404**
+  trên Maven Central; BOM `spring-boot-dependencies:4.1.0`
+  (`spring-boot-dependencies-4.1.0.pom` trong `~/.m2`) không quản `spring-boot-starter-aop` mà
+  quản `spring-boot-starter-aspectj` (và `spring-boot-starter-aspectj-test`), cả hai đều
+  publish thật (HTTP 200). Team dùng style annotation-driven
+  (`@CircuitBreaker`/`@Retry`/`@RateLimiter` — xem mục resilience4j ở trên) phải khai
+  `spring-boot-starter-aspectj` thay vì `spring-boot-starter-aop`, nếu không sẽ gặp
+  `Could not resolve dependencies ... spring-boot-starter-aop:jar:4.1.0 was not found`.
+- **`org.springframework.retry:spring-retry` không còn tới tay consumer của
+  `javalibs-datahub-spring-boot-starter` qua đường transitive.** spring-kafka 3.3.7 (1.0.x) →
+  4.1.0 (2.0.x) bỏ phụ thuộc `spring-retry` — đã kiểm bằng `mvn dependency:tree` (không dùng cờ
+  `-q`): ở 1.0.x, `spring-kafka:jar:3.3.7:compile` kéo
+  `org.springframework.retry:spring-retry:jar:2.0.12:compile`; ở 2.0.x,
+  `spring-kafka:jar:4.1.0:compile` không còn dòng `spring-retry` nào trong cây. javalibs không
+  tự dùng `spring-retry` (grep toàn repo: 0 kết quả) nên javalibs không bị ảnh hưởng, nhưng
+  service nào đang dùng `@Retryable`/`RetryTemplate` (Spring Retry) mà trước giờ ăn ké
+  `spring-retry` transitively qua `javalibs-datahub-spring-boot-starter` sẽ vỡ build/runtime khi
+  nâng lên 2.0.x — phải tự khai `org.springframework.retry:spring-retry` tường minh trong pom
+  của service.
 
 ## Thay đổi hành vi
 
@@ -145,6 +179,21 @@ vi thật (ví dụ xử lý nợ kỹ thuật ở mục "Để lại cho sau" d
   deserialization (chấp nhận mọi subtype khi polymorphic deserialize). **Nợ kỹ thuật không
   đổi, chỉ đổi chỗ ở** — giữ nguyên ở 2.0.0 vì sửa nó (thu hẹp danh sách subtype được phép) là
   đổi hành vi thật; xử lý ở một thay đổi riêng có chủ đích, không lẫn vào migration này.
+- **`javalibs-security-issuer` khai `com.fasterxml.jackson.datatype:jackson-datatype-jsr310`
+  (Jackson 2) ở scope compile, không `<optional>`, mà không ai dùng.** `grep` toàn bộ
+  `javalibs-security-issuer/src` ra 0 tham chiếu Jackson; `jjwt-jackson:0.12.6` — thứ duy nhất
+  trong module thật sự cần Jackson — tự khai `jackson-databind` riêng của nó (đã kiểm
+  `jjwt-jackson-0.12.6.pom`), không cần `jackson-datatype-jsr310`. Hệ quả: `jackson-databind`
+  2.x lọt lên **compile classpath** của `javalibs-authz-jpa` và mọi service phụ thuộc issuer
+  (transitively, vì `javalibs-authz-jpa` khai `javalibs-security-issuer` là
+  `<optional>true</optional>`). **Cạm bẫy "biên dịch xanh nhưng chết lúc chạy":** lập trình
+  viên gõ `import com.fasterxml.jackson.databind.ObjectMapper` sẽ biên dịch xanh (class có mặt
+  trên compile classpath), nhưng bean `ObjectMapper` mà Boot 4.1 autowire là
+  `tools.jackson.databind.ObjectMapper` (Jackson 3) →
+  `NoSuchBeanDefinitionException`/`BeanNotOfRequiredTypeException` lúc khởi động nếu code lỡ
+  khai kiểu tường minh theo `com.fasterxml.jackson.databind.ObjectMapper`. Đây là nợ mang từ
+  1.0.x, không phải hồi quy của migration Boot 4.1 — gỡ dependency này khỏi pom là thay đổi
+  phụ thuộc có chủ đích, để ở một đợt riêng, không lẫn vào migration này.
 
 ## Jackson 2.x còn sót trong dependency tree (không kiểm soát được)
 
@@ -167,14 +216,22 @@ runtime của một số module, ngoài tầm kiểm soát của javalibs:
    bình thường của hệ sinh thái trong giai đoạn chuyển tiếp. **Đây không phải "còn sót Jackson
    2.x" theo nghĩa DoD lo ngại** (không có `jackson-databind`/`jackson-core` 2.x nào bị dùng để
    serialize dữ liệu của javalibs) — chỉ là artifact annotation dùng chung, an toàn.
-2. **Full stack Jackson 2 (`jackson-core` + `jackson-databind` + `jackson-datatype-jsr310`, đều
-   2.21.4) — hai nguồn thật, có chủ đích, không gỡ được:**
-   - `javalibs-security-issuer`: thư viện `io.jsonwebtoken:jjwt-jackson:0.12.6` (serializer JSON
-     cho JJWT) chỉ hỗ trợ Jackson 2, chưa có bản Jackson 3. Module tự khai
-     `jackson-datatype-jsr310` (compile) và `jackson-databind` (test) bằng coordinate Jackson 2
-     `com.fasterxml.jackson.*` để phục vụ riêng JJWT — **không liên quan** tới `ObjectMapper`
-     Jackson 3 mà service tự inject qua DI. Lan transitively (optional) sang
-     `javalibs-authz-jpa` vì module đó phụ thuộc optional vào `javalibs-security-issuer`.
+2. **Full stack Jackson 2 (`jackson-core` + `jackson-databind`, 2.21.4) — hai nguồn thật, có chủ
+   đích, không gỡ được; cộng thêm một khoản nợ compile-scope không ai dùng, tách riêng bên dưới:**
+   - `javalibs-security-core`: thư viện `io.jsonwebtoken:jjwt-jackson:0.12.6` (serializer JSON
+     cho JJWT) chỉ hỗ trợ Jackson 2, chưa có bản Jackson 3; bản thân `jjwt-jackson` tự khai
+     `com.fasterxml.jackson.core:jackson-databind` (đã kiểm `jjwt-jackson-0.12.6.pom` trong
+     `~/.m2`: chỉ có `jjwt-api` + `jackson-databind`, **không** có `jackson-datatype-jsr310`).
+     `jjwt-jackson` được khai ở **`javalibs-security-core`** — module gốc mà
+     `javalibs-security-spring-boot-starter` phụ thuộc trực tiếp — **không phải**
+     `javalibs-security-issuer` như bản CHANGELOG trước đây ghi nhầm. Đã xác nhận bằng
+     `mvn dependency:tree` trên `javalibs-security-spring-boot-starter`: cây chỉ đi qua
+     `javalibs-security-core`, hoàn toàn không có `javalibs-security-issuer` (module này khai
+     `<optional>true</optional>`, không tự kéo vào cây của consumer trừ khi tự thêm). Kết quả:
+     `jackson-databind` 2.21.4 (runtime) có mặt trên classpath của **mọi** consumer của
+     `javalibs-security-spring-boot-starter`, kể cả service chỉ validate JWT (không phát hành
+     token, không dùng issuer) — không liên quan tới `ObjectMapper` Jackson 3 mà service tự
+     inject qua DI.
    - `javalibs-openapi`: springdoc-openapi 3.1.0 → `io.swagger.core.v3:swagger-core-jakarta:2.2.52`
      → `io.swagger.core.v3:swagger-models-jakarta:2.2.52`, kéo **compile-scope** (không phải
      optional) `jackson-databind`/`jackson-core`/`jackson-dataformat-yaml`/
@@ -183,15 +240,18 @@ runtime của một số module, ngoài tầm kiểm soát của javalibs:
      ước, nhưng bản thân stack Jackson 2 mà nó kéo theo là compile scope trong cây phụ thuộc của
      swagger, không optional.
 
-**Ý nghĩa với người nâng cấp:** service dùng `javalibs-security-spring-boot-starter` (qua
-`javalibs-security-issuer`) hoặc `javalibs-openapi-spring-boot-starter` sẽ có **hai stack
-Jackson cùng nằm trên classpath runtime** — Jackson 3 (`tools.jackson.*`, dùng cho
-`ObjectMapper` chính, cache Redis, REST request/response body) và Jackson 2
-(`com.fasterxml.jackson.*`, chỉ dùng nội bộ bởi JJWT và bởi swagger-models khi springdoc build
-tài liệu OpenAPI). Hai stack không tương tác, không đọc/ghi chung dữ liệu, không xung đột
-runtime. Không cần hành động gì để "dọn sạch" — cả hai nguồn đều là phụ thuộc bên thứ ba
-javalibs không kiểm soát; theo dõi `jjwt-jackson` (JJWT project) và `swagger-models-jakarta`
-(springdoc/swagger-core project) để biết khi nào họ phát hành bản Jackson 3.
+**Ý nghĩa với người nâng cấp:** **mọi** service dùng `javalibs-security-spring-boot-starter`
+(qua `javalibs-security-core` — không cần dùng `javalibs-security-issuer`) hoặc
+`javalibs-openapi-spring-boot-starter` sẽ có **hai stack Jackson cùng nằm trên classpath
+runtime** — Jackson 3 (`tools.jackson.*`, dùng cho `ObjectMapper` chính, cache Redis, REST
+request/response body) và Jackson 2 (`com.fasterxml.jackson.*`, chỉ dùng nội bộ bởi JJWT và bởi
+swagger-models khi springdoc build tài liệu OpenAPI). Hai stack không tương tác, không đọc/ghi
+chung dữ liệu, không xung đột runtime. Không cần hành động gì để "dọn sạch" — cả hai nguồn đều
+là phụ thuộc bên thứ ba javalibs không kiểm soát; theo dõi `jjwt-jackson` (JJWT project) và
+`swagger-models-jakarta` (springdoc/swagger-core project) để biết khi nào họ phát hành bản
+Jackson 3. (Về khoản `jackson-datatype-jsr310` compile-scope riêng, không ai dùng, mà
+`javalibs-security-issuer` tự khai — xem mục **"Để lại cho sau"** ở trên, đây là nợ khác, không
+liên quan tới hai nguồn ở trên.)
 
 **Cảnh báo về lệnh nghiệm thu DoD của spec** — chạy đúng nguyên văn:
 
@@ -210,7 +270,10 @@ nhiều module — `mvn -q dependency:tree` một mình, không qua grep gì c�
 Chạy đúng cách (bỏ `-q`, hoặc dùng `-DoutputFile` không kèm `-q`) mới cho kết quả thật:
 Spring Boot 3.x và Testcontainers 1.x **sạch tuyệt đối** — 0 artifact của hai nhóm này ở bất kỳ
 module nào. Nhưng Jackson 2.x thì **không sạch** — các dòng `2.21.4`/`2.21` nêu ở trên có thật
-trong `javalibs-security-issuer`, `javalibs-authz-jpa` (transitively) và `javalibs-openapi`.
+trong `javalibs-security-core` (và mọi consumer của `javalibs-security-spring-boot-starter`,
+transitively), thêm khoản riêng ở `javalibs-security-issuer`/`javalibs-authz-jpa`
+(transitively) do dependency `jackson-datatype-jsr310` không ai dùng, và trong
+`javalibs-openapi`.
 Thêm một lớp nhiễu thứ hai nếu ai đó sửa lại lệnh bằng cách bỏ `-q`: regex `3\.[0-9]+\.[0-9]+`
 của DoD khớp nhầm chính các dòng `tools.jackson.core:...:jar:3.1.4` (Jackson 3 — ĐÚNG, không
 phải lỗi) vì nó không phân biệt groupId `tools.jackson` (mới) với `com.fasterxml.jackson` (cũ);

@@ -42,4 +42,4 @@ Supplier<PaymentResult> protectedCall =
 
 **Kết hợp với retry của javalibs-datahub:** đặt circuit breaker gần "dây" nhất (interceptor cuối) để mỗi lần retry được ghi nhận riêng.
 
-**Dùng annotation `@CircuitBreaker`/`@Retry`?** Thêm `resilience4j-spring-boot4` + `spring-boot-starter-aop` vào service — registry của resilience4j sẽ thay thế registry mặc định của javalibs (các bean ở đây đều `@ConditionalOnMissingBean`).
+**Dùng annotation `@CircuitBreaker`/`@Retry`?** Thêm `resilience4j-spring-boot4` + `spring-boot-starter-aspectj` vào service — registry của resilience4j sẽ thay thế registry mặc định của javalibs (các bean ở đây đều `@ConditionalOnMissingBean`).
