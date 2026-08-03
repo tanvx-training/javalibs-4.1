@@ -20,13 +20,13 @@ import org.springframework.context.annotation.Configuration;
  * created from these registries inherits the defaults, so services get sane
  * protection without any per-service tuning.
  *
- * <p>Backs off when the application (or resilience4j-spring-boot3, if a team
+ * <p>Backs off when the application (or resilience4j-spring-boot4, if a team
  * chooses the annotation-driven style) provides its own registries.</p>
  */
 @AutoConfiguration(afterName = {
-        "io.github.resilience4j.springboot3.circuitbreaker.autoconfigure.CircuitBreakerAutoConfiguration",
-        "io.github.resilience4j.springboot3.retry.autoconfigure.RetryAutoConfiguration",
-        "io.github.resilience4j.springboot3.ratelimiter.autoconfigure.RateLimiterAutoConfiguration"})
+        "io.github.resilience4j.springboot.circuitbreaker.autoconfigure.CircuitBreakerAutoConfiguration",
+        "io.github.resilience4j.springboot.retry.autoconfigure.RetryAutoConfiguration",
+        "io.github.resilience4j.springboot.ratelimiter.autoconfigure.RateLimiterAutoConfiguration"})
 @EnableConfigurationProperties(ResilienceProperties.class)
 public class ResilienceAutoConfiguration {
 

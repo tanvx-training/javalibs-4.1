@@ -78,6 +78,24 @@ _(bồi dần theo từng bậc migration)_
   đổi tên lớp serializer theo phiên bản Jackson). Tên method và danh sách tham số (rỗng) giữ
   nguyên. Service gọi qua `var` hoặc chaining không bị ảnh hưởng; service khai kiểu tường minh
   `GenericJackson2JsonRedisSerializer` phải đổi.
+- **resilience4j 2.3.0 → 2.4.0 (bậc 9), artifact `resilience4j-spring-boot3` →
+  `resilience4j-spring-boot4`.** Artifact mới bị bỏ sót khỏi `resilience4j-bom` 2.4.0
+  (resilience4j#2427; đã kiểm bằng cách tải trực tiếp `resilience4j-bom-2.4.0.pom` từ Maven
+  Central và grep — BOM chỉ liệt kê `resilience4j-spring-boot3`, không có `-spring-boot4`) nên
+  javalibs pin version tường minh trong `<dependencyManagement>` của `pom.xml` gốc — service
+  import BOM `javalibs-dependencies` không phải làm gì thêm. Team dùng style annotation-driven
+  (`@CircuitBreaker`/`@Retry`) phải tự đổi dependency sang `resilience4j-spring-boot4`.
+  **Lưu ý package đổi khác quy luật thông thường:** artifact mới **không** dùng package
+  `io.github.resilience4j.springboot4.*` như tên artifact gợi ý — package thực tế là
+  `io.github.resilience4j.springboot.*` (bỏ hẳn số phiên bản Boot). Service tự khai
+  `@AutoConfiguration(beforeName = "...")`/`afterName` trỏ vào lớp
+  `CircuitBreakerAutoConfiguration`/`RetryAutoConfiguration`/`RateLimiterAutoConfiguration` của
+  resilience4j phải đổi cả ba chuỗi FQCN.
+- **`RestClientCustomizer` dời package:**
+  `org.springframework.boot.web.client.RestClientCustomizer` →
+  `org.springframework.boot.restclient.RestClientCustomizer` (artifact
+  `org.springframework.boot:spring-boot-restclient`, khai optional). Service tự implement
+  `RestClientCustomizer` (ví dụ để tùy biến `RestClient.Builder` do Boot cấp) phải đổi import.
 
 ## Thay đổi hành vi
 

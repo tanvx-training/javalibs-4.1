@@ -19,7 +19,7 @@
   <!--
     Migration Boot 3.5.3 -> 4.1 đi theo bậc: danh sách này thu gọn ở bậc 0 và
     mở dần từng bậc, để `mvn clean install` luôn xanh trọn vẹn ở cuối mỗi bậc.
-    Bậc hiện tại: 8. Xem docs/superpowers/plans/2026-08-02-javalibs-4-1-migration.md
+    Bậc hiện tại: 9. Xem docs/superpowers/plans/2026-08-02-javalibs-4-1-migration.md
   -->
   <modules>
     <module>javalibs-dependencies</module>
@@ -37,6 +37,7 @@
     <module>javalibs-authz</module>
     <module>javalibs-datahub</module>
     <module>javalibs-cache</module>
+    <module>javalibs-resilience</module>
   </modules>
 
   <properties>
@@ -49,7 +50,7 @@
     <spring-boot.version>4.1.0</spring-boot.version>
     <jjwt.version>0.12.6</jjwt.version>
     <mapstruct.version>1.6.3</mapstruct.version>
-    <resilience4j.version>2.3.0</resilience4j.version>
+    <resilience4j.version>2.4.0</resilience4j.version>
     <springdoc.version>3.1.0</springdoc.version>
 
     <!-- Distribution: override per environment (CI) via -D or settings.xml profiles -->
@@ -86,6 +87,16 @@
         <version>${resilience4j.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <!--
+        resilience4j-bom BỎ SÓT artifact spring-boot4 (resilience4j#2427),
+        nên phải pin tường minh — nếu không, build gãy lúc resolve.
+      -->
+      <dependency>
+        <groupId>io.github.resilience4j</groupId>
+        <artifactId>resilience4j-spring-boot4</artifactId>
+        <version>${resilience4j.version}</version>
       </dependency>
 
       <!-- Third-party libraries not covered by the Spring Boot BOM -->
