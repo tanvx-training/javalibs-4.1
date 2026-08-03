@@ -29,7 +29,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  * pick the blacklist up.</p>
  */
 @AutoConfiguration(
-        afterName = "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration",
+        afterName = "org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration",
         before = JavalibsSecurityAutoConfiguration.class)
 @ConditionalOnProperty(prefix = "javalibs.security", name = "enabled", havingValue = "true",
         matchIfMissing = true)

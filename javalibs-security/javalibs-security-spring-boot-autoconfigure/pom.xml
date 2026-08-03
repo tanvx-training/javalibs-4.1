@@ -79,5 +79,23 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--
+      Test-only: brings Boot's own OAuth2-resource-server and Redis auto-configuration classes
+      onto the classpath so AutoConfigurationOrderingReferencesTest can reflectively verify that
+      every beforeName/afterName string on our @AutoConfiguration classes still resolves. Neither
+      is a compile-scope dependency of this module (see the optional integrations above) — this
+      is purely to catch a relocated Boot class before it silently breaks an ordering constraint
+      in production.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-security-oauth2-resource-server</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-data-redis</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

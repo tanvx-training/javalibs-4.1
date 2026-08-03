@@ -48,8 +48,8 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
  * configuration change.</p>
  */
 @AutoConfiguration(
-        beforeName = "org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet."
-                + "OAuth2ResourceServerAutoConfiguration",
+        beforeName = "org.springframework.boot.security.oauth2.server.resource.autoconfigure.web."
+                + "OAuth2ResourceServerWebSecurityAutoConfiguration",
         before = ServletWebSecurityAutoConfiguration.class)
 @ConditionalOnClass({SecurityFilterChain.class, JwtDecoder.class, Jwt.class})
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -115,11 +115,16 @@ public class JavalibsOAuth2ResourceServerAutoConfiguration {
      * {@code spring.security.oauth2.resourceserver.jwt.issuer-uri} /
      * {@code jwk-set-uri} / {@code public-key-location} conditions — rather than by
      * {@code @ConditionalOnBean(JwtDecoder.class)}. This configuration class is ordered
-     * {@code beforeName} Boot's {@code OAuth2ResourceServerAutoConfiguration} so that this
-     * {@link SecurityFilterChain} bean definition is registered first, causing Boot's own
-     * default {@code jwtSecurityFilterChain} fallback (which does not know about
+     * {@code beforeName} Boot's {@code OAuth2ResourceServerWebSecurityAutoConfiguration} —
+     * the class that actually declares Boot's fallback {@code jwtSecurityFilterChain} /
+     * {@code opaqueTokenSecurityFilterChain} beans (Boot's plain
+     * {@code OAuth2ResourceServerAutoConfiguration} only builds the {@code JwtDecoder} /
+     * converter / properties machinery and does not itself define a
+     * {@link SecurityFilterChain}) — so that this bean definition is registered first,
+     * causing Boot's own fallback (which does not know about
      * {@code UserContextJwtAuthenticationConverter}) to correctly back off via its own
-     * {@code @ConditionalOnMissingBean(SecurityFilterChain.class)}. Because {@code beforeName}
+     * {@code @ConditionalOnMissingBean(SecurityFilterChain.class)}-equivalent
+     * {@code @ConditionalOnDefaultWebSecurity} condition. Because {@code beforeName}
      * makes this class run first, the {@code JwtDecoder} bean *definition* does not exist yet
      * at condition-evaluation time — only at actual bean instantiation time, once every
      * auto-configuration class has finished registering its bean definitions — so a
