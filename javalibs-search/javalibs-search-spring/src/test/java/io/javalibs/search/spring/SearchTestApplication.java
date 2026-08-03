@@ -1,7 +1,7 @@
 package io.javalibs.search.spring;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 
 /**
  * Minimal test-only Spring Boot configuration so that {@code @DataJpaTest} can locate a

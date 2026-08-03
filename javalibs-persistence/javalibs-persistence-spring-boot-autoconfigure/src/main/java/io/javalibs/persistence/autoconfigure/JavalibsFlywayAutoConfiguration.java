@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer;
+import org.springframework.boot.flyway.autoconfigure.FlywayConfigurationCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Bean;
  * everything else (locations, datasource, placeholders) stays standard Spring
  * Boot {@code spring.flyway.*} configuration.</p>
  */
-@AutoConfiguration(beforeName = "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration")
+@AutoConfiguration(beforeName = "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration")
 @ConditionalOnClass(Flyway.class)
 @ConditionalOnProperty(prefix = "javalibs.persistence.flyway", name = "enabled",
         havingValue = "true", matchIfMissing = true)

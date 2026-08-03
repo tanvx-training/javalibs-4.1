@@ -19,7 +19,7 @@
   <!--
     Migration Boot 3.5.3 -> 4.1 đi theo bậc: danh sách này thu gọn ở bậc 0 và
     mở dần từng bậc, để `mvn clean install` luôn xanh trọn vẹn ở cuối mỗi bậc.
-    Bậc hiện tại: 6. Xem docs/superpowers/plans/2026-08-02-javalibs-4-1-migration.md
+    Bậc hiện tại: 7. Xem docs/superpowers/plans/2026-08-02-javalibs-4-1-migration.md
   -->
   <modules>
     <module>javalibs-dependencies</module>
@@ -32,6 +32,9 @@
     <module>javalibs-openapi</module>
     <module>javalibs-security</module>
     <module>javalibs-test</module>
+    <module>javalibs-persistence</module>
+    <module>javalibs-search</module>
+    <module>javalibs-authz</module>
   </modules>
 
   <properties>

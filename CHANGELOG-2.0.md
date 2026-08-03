@@ -32,6 +32,30 @@ _(bồi dần theo từng bậc migration)_
   → `org.springframework.boot.resttestclient.TestRestTemplate` (artifact
   `org.springframework.boot:spring-boot-resttestclient`). Service tự import lớp này (thay vì chỉ
   dùng qua `@Autowired` không khai kiểu tường minh — vẫn phải import đúng lớp) phải đổi.
+- **Flyway autoconfigure dời package (bậc 7):** `org.springframework.boot.autoconfigure.flyway.*`
+  → `org.springframework.boot.flyway.autoconfigure.*` (tên lớp `FlywayAutoConfiguration`,
+  `FlywayConfigurationCustomizer` giữ nguyên). Artifact chứa các lớp này cũng đổi:
+  `spring-boot-autoconfigure` → `org.springframework.boot:spring-boot-flyway` (khai
+  `<optional>true</optional>` giống `flyway-core`). Service tự khai `@AutoConfiguration(beforeName
+  = "...")`/`afterName` trỏ vào lớp Flyway của Boot, hoặc tự import
+  `FlywayConfigurationCustomizer`, phải đổi cả chuỗi FQCN lẫn import.
+- **`HibernateJpaAutoConfiguration` dời package:**
+  `org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration` →
+  `org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration` (artifact
+  `org.springframework.boot:spring-boot-hibernate`, khai optional).
+- **`@EntityScan` dời package:** `org.springframework.boot.autoconfigure.domain.EntityScan` →
+  `org.springframework.boot.persistence.autoconfigure.EntityScan` (artifact
+  `org.springframework.boot:spring-boot-persistence`, khai optional trong autoconfigure —
+  thường đã có sẵn transitively qua `spring-boot-starter-data-jpa` ở runtime/test).
+- **`@DataJpaTest`/`TestEntityManager` dời package và tách starter riêng:**
+  `org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest` →
+  `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`;
+  `org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager` →
+  `org.springframework.boot.jpa.test.autoconfigure.TestEntityManager`. `TestEntityManager`
+  không còn kéo theo bởi `spring-boot-starter-data-jpa` (scope test) — service dùng
+  `@DataJpaTest`/`TestEntityManager` phải đổi dependency test-scope sang
+  `org.springframework.boot:spring-boot-starter-data-jpa-test` (kéo theo cả
+  `spring-boot-starter-data-jpa` + `spring-boot-starter-test` + hỗ trợ slice test JPA).
 
 ## Thay đổi hành vi
 
