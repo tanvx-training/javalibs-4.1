@@ -15,7 +15,8 @@
 
   <name>javalibs :: persistence :: spring-boot-starter</name>
   <description>
-    Starter aggregating the javalibs Flyway conventions with flyway-core and the
+    Starter aggregating the javalibs Flyway conventions with Spring Boot's Flyway
+    starter (spring-boot-flyway auto-configuration + flyway-core) and the
     PostgreSQL dialect module.
   </description>
 
@@ -25,13 +26,32 @@
       <artifactId>javalibs-persistence-spring-boot-autoconfigure</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Boot 4 tách auto-config Flyway sang spring-boot-flyway; flyway-core trần
+         không đủ để Boot chạy migration. -->
     <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-core</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-flyway</artifactId>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.javalibs</groupId>
+      <artifactId>javalibs-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jdbc</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

@@ -156,6 +156,18 @@ _(bồi dần theo từng bậc migration)_
 
 _(mọi test bị sửa vì hành vi đổi — loại (b) — phải có mục ở đây)_
 
+- **`javalibs-persistence-spring-boot-starter` nay kéo `spring-boot-starter-flyway`** thay vì
+  `flyway-core` trần (sửa lỗi phát hiện sau migration, 13/10/2026). Boot 4 tách auto-config
+  Flyway sang module `spring-boot-flyway`; starter cũ thiếu module này nên service chỉ khai
+  starter **chết lúc khởi động** (`NoClassDefFoundError: FlywayConfigurationCustomizer` từ
+  `JavalibsFlywayAutoConfiguration`), và kể cả không chết thì Boot cũng không chạy migration.
+  `JavalibsFlywayAutoConfiguration` nay `@ConditionalOnClass({Flyway, FlywayConfigurationCustomizer})`
+  nên khi dùng module autoconfigure trực tiếp mà thiếu `spring-boot-flyway` thì lùi lại thay vì
+  làm hỏng context. Service đã tự khai `spring-boot-starter-flyway` để chữa cháy có thể bỏ dòng
+  đó (để nguyên cũng vô hại). Test mới: `PersistenceStarterTest` (chỉ starter + Postgres thật,
+  migration chạy, mặc định javalibs áp dụng), `backsOffWhenSpringBootFlywayModuleIsAbsent`.
+  Ngoài mục này, các ghi chú bên dưới về migration vẫn đúng.
+
 **Rỗng, có chủ đích — đã kiểm chứng qua toàn bộ 12 task migration (bậc 0–9 + test bảo vệ),
 không phải bỏ sót.** Mọi sửa đổi test trong suốt migration đều được phân loại (a) — API dời
 chỗ/đổi arity do Boot 4/Spring 7/Jackson 3/Testcontainers 2 tự đổi, không phải javalibs chủ
