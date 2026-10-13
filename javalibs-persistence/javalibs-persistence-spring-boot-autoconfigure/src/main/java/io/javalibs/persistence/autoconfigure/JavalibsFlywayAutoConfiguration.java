@@ -24,9 +24,13 @@ import org.springframework.context.annotation.Bean;
  * <p>Each default can be overridden via {@code javalibs.persistence.flyway.*};
  * everything else (locations, datasource, placeholders) stays standard Spring
  * Boot {@code spring.flyway.*} configuration.</p>
+ *
+ * <p>Spring Boot 4 ships its Flyway auto-configuration in the separate
+ * {@code spring-boot-flyway} module; without it on the classpath this
+ * auto-configuration backs off instead of failing the context.</p>
  */
 @AutoConfiguration(beforeName = "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration")
-@ConditionalOnClass(Flyway.class)
+@ConditionalOnClass({Flyway.class, FlywayConfigurationCustomizer.class})
 @ConditionalOnProperty(prefix = "javalibs.persistence.flyway", name = "enabled",
         havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(PersistenceProperties.class)

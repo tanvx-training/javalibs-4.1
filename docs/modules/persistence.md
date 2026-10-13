@@ -9,8 +9,8 @@ Module có **2 submodule** (không có core/spring — toàn bộ giá trị n�
 | artifactId | Packaging | Mô tả |
 |---|---|---|
 | `javalibs-persistence` | pom | Parent gộp 2 submodule |
-| `javalibs-persistence-spring-boot-autoconfigure` | jar | `JavalibsFlywayAutoConfiguration` + `PersistenceProperties` (namespace `javalibs.persistence.flyway.*`). `flyway-core` là *optional* — không có Flyway trên classpath thì tắt. Package `io.javalibs.persistence.autoconfigure` |
-| `javalibs-persistence-spring-boot-starter` | jar | Starter: autoconfigure + **`flyway-core` + `flyway-database-postgresql`** (module dialect PostgreSQL bắt buộc từ Flyway 10) |
+| `javalibs-persistence-spring-boot-autoconfigure` | jar | `JavalibsFlywayAutoConfiguration` + `PersistenceProperties` (namespace `javalibs.persistence.flyway.*`). `flyway-core` và `spring-boot-flyway` là *optional* — thiếu một trong hai trên classpath thì tắt (Boot 4 để auto-config Flyway trong module `spring-boot-flyway`). Package `io.javalibs.persistence.autoconfigure` |
+| `javalibs-persistence-spring-boot-starter` | jar | Starter: autoconfigure + **`spring-boot-starter-flyway`** (auto-config Flyway của Boot 4 + `flyway-core`) + **`flyway-database-postgresql`** (module dialect PostgreSQL bắt buộc từ Flyway 10) |
 
 ## Khi nào dùng / không dùng
 
@@ -23,7 +23,7 @@ Module có **2 submodule** (không có core/spring — toàn bộ giá trị n�
 **Không dùng khi:**
 
 - Dự án dùng Liquibase hoặc quản lý schema bằng `ddl-auto` của Hibernate (không khuyến khích cho production) — module không liên quan.
-- Database không phải PostgreSQL: chỉ cần bỏ starter, dùng trực tiếp `javalibs-persistence-spring-boot-autoconfigure` + `flyway-core` + module dialect tương ứng (`flyway-mysql`...) — phần default vẫn áp dụng.
+- Database không phải PostgreSQL: chỉ cần bỏ starter, dùng trực tiếp `javalibs-persistence-spring-boot-autoconfigure` + `spring-boot-starter-flyway` + module dialect tương ứng (`flyway-mysql`...) — phần default vẫn áp dụng.
 - Môi trường throwaway thật sự cần `flyway clean` — có thể nới từng guard qua property, nhưng đừng làm mặc định.
 
 ## Các thành phần chính
@@ -88,7 +88,7 @@ Toàn bộ property bind vào `PersistenceProperties` (`javalibs.persistence.fly
 </dependency>
 ```
 
-Kèm sẵn `flyway-core` + `flyway-database-postgresql`. Không cần bật gì thêm: có datasource là Flyway chạy migrate lúc khởi động (hành vi chuẩn Boot).
+Kèm sẵn `spring-boot-starter-flyway` (gồm `spring-boot-flyway` + `flyway-core`) + `flyway-database-postgresql`. Không cần bật gì thêm: có datasource là Flyway chạy migrate lúc khởi động (hành vi chuẩn Boot).
 
 ### `application.yml`
 
@@ -162,7 +162,7 @@ Sau đó bật `javalibs.datahub.outbox.enabled=true` / `javalibs.datahub.idempo
 - **Nới từng guard**: đặt property tương ứng, vd `javalibs.persistence.flyway.clean-disabled=false` cho môi trường dev throwaway, `baseline-on-migrate=true` khi onboard DB legacy — chỉ nên đặt trong profile của môi trường đó.
 - **Tắt toàn bộ default**: `javalibs.persistence.flyway.enabled=false` — Flyway vẫn chạy nhưng theo hành vi Boot thuần.
 - **Customizer riêng**: khai báo bean tên `javalibsFlywayDefaultsCustomizer` (kiểu `FlywayConfigurationCustomizer`) để thay hẳn bộ default (`@ConditionalOnMissingBean` theo tên). Muốn **bổ sung** cấu hình lập trình (callback, resolver...) thì thêm bean `FlywayConfigurationCustomizer` khác tên — Boot áp tất cả customizer.
-- **Database khác PostgreSQL**: dùng artifact autoconfigure trực tiếp + `flyway-core` + module dialect của DB đó thay vì starter.
+- **Database khác PostgreSQL**: dùng artifact autoconfigure trực tiếp + `spring-boot-starter-flyway` + module dialect của DB đó thay vì starter. Chỉ khai `flyway-core` là **không đủ** ở Boot 4: thiếu `spring-boot-flyway` thì Boot không chạy migration và autoconfigure của javalibs lùi lại.
 - **Tắt Flyway hẳn** (vd test slice): `spring.flyway.enabled=false` — chuẩn Boot, không liên quan module.
 
 ## Testing

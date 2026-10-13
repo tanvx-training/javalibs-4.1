@@ -11,7 +11,7 @@ Chuẩn hóa quản lý version database bằng **Flyway** với các mặc đ�
 </dependency>
 ```
 
-Kèm sẵn `flyway-core` + `flyway-database-postgresql`. Cấu hình datasource/locations vẫn theo chuẩn Spring Boot (`spring.flyway.*`).
+Kèm sẵn `spring-boot-starter-flyway` (auto-config Flyway của Boot 4 + `flyway-core`) + `flyway-database-postgresql`. Cấu hình datasource/locations vẫn theo chuẩn Spring Boot (`spring.flyway.*`).
 
 ## Mặc định được enforce (ghi đè qua `javalibs.persistence.flyway.*`)
 

@@ -4,6 +4,7 @@ import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.flyway.autoconfigure.FlywayConfigurationCustomizer;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +38,17 @@ class JavalibsFlywayAutoConfigurationTest {
                     context.getBean(FlywayConfigurationCustomizer.class).customize(configuration);
                     assertThat(configuration.isBaselineOnMigrate()).isTrue();
                     assertThat(configuration.isCleanDisabled()).isFalse();
+                });
+    }
+
+    @Test
+    void backsOffWhenSpringBootFlywayModuleIsAbsent() {
+        // Boot 4 tách auto-config Flyway sang spring-boot-flyway; thiếu module đó thì
+        // không được làm hỏng context, chỉ lùi lại.
+        runner.withClassLoader(new FilteredClassLoader(FlywayConfigurationCustomizer.class))
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).doesNotHaveBean("javalibsFlywayDefaultsCustomizer");
                 });
     }
 
